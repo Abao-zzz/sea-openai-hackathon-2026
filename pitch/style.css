@@ -890,3 +890,14 @@
 .pitch .wrongs-editorial .diff { min-height:7.7rem; font-size:.9rem; line-height:1.9; padding-top:.6rem; padding-bottom:.6rem; }
 .pitch .wrongs-editorial .failure-panel { padding-right:1.5rem; }
 .pitch .wrongs-editorial .failure-panel + .failure-panel { padding-left:1.5rem; }
+
+/* Cover highlights share the deck's three accent washes. */
+.pitch .title-highlight { background:var(--lime); color:var(--ink); padding:0 .04em; border-radius:.12em; }
+.pitch .title-promise mark { color:inherit; padding:.06em .14em; border-radius:.2em; }
+.pitch .title-check { background:#e1e1fe; }
+.pitch .title-human { background:#dfeaff; }
+
+/* Keep the cover highlight inside its own line. */
+.slidev-layout.pitch h1.title-hero { line-height:1.24; }
+.pitch .title-highlight { background:transparent; position:relative; isolation:isolate; }
+.pitch .title-highlight::before { content:""; position:absolute; z-index:-1; left:0; right:0; height:.86em; bottom:.02em; background:var(--lime); border-radius:.12em; }

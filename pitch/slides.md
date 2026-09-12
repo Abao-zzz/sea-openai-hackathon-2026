@@ -31,8 +31,8 @@ centered: true
 
 <div class="title-grid">
 <div class="title-block">
-<h1 class="title-hero"><span class="rv" style="display:block">沒人敢碰的 SQL，</span><span class="rv" style="display:block;--d:220">從此有人接手。</span></h1>
-<div class="title-sub rv" style="--d:600"><span class="title-product">SQL Performance Agent</span><span class="title-promise">驗證通過，才交給人確認套用。</span></div>
+<h1 class="title-hero"><span class="rv" style="display:block">沒人敢碰的 SQL，</span><span class="rv" style="display:block;--d:220">從此<mark class="title-highlight">有人接手</mark>。</span></h1>
+<div class="title-sub rv" style="--d:600"><span class="title-product">SQL Performance Agent</span><span class="title-promise"><mark class="title-check">驗證通過</mark>，才交給<mark class="title-human">人確認</mark>套用。</span></div>
 <div class="rule rv grow" style="--d:900"></div>
 <div class="title-team rv" style="--d:1100">肥宅快樂水</div>
 <div class="title-event rv" style="--d:1200">2026 Sea x OpenAI Regional Codex Hackathon TW</div>
