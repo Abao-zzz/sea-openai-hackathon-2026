@@ -1,4 +1,4 @@
-# AI SQL Performance Engineer
+# SQL Performance Agent
 
 > 先驗證，再套用。讓工程師依據可檢查的證據，決定是否採用 AI 提出的 SQL 優化。
 
