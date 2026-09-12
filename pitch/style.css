@@ -1,0 +1,584 @@
+/* ──────────────────────────────────────────────────────────────
+   Pitch deck — design tokens + global layout
+   視覺語言參考 Dia（diabrowser.com）：紙色畫布、白卡 1px 邊線不用陰影、
+   9999 圓角藥丸、等寬大寫眉標帶章節編號、輕字重襯線標題。
+   光譜只以「線」出現：S1 hero、每章眉標右端的 running rule、S10 hero 回歸；
+   同一張漸層、同一速度、同一相位，不上黑、不進卡、不上字。
+   畫布為 Slidev 預設 980×551，Slidev 會等比縮放到任何投影機；尺寸皆為 rem。
+   顏色 96% 無彩：紅 = 不相等／FAIL／不敢動，綠 = 相等／通過；萊姆只當螢光標記。
+   ────────────────────────────────────────────────────────────── */
+:root {
+  /* surfaces */
+  --bg: #F8F8F8;            /* bone：頁面畫布 */
+  --card: #FFFFFF;          /* paper white：卡片 */
+  --linen: #EFEFEF;         /* 藥丸、流程節點填色 */
+  --void: #020204;          /* 黑色區塊 */
+  /* ink */
+  --ink: #000000;
+  --muted: #636363;         /* carbon：次要文字 */
+  --soft: #888888;          /* slate：第三層文字、頁碼 */
+  --line: #D6D6D6;          /* 卡片邊線（silver 略淡） */
+  --divider: #C6C6C6;       /* silver：分隔線 */
+  /* semantic */
+  --green: #15803D;  --green-tint: #DCFCE7;
+  --red:   #B91C1C;  --red-tint:   #FEE2E2;
+  /* editorial accents */
+  --lime: #F2FCB3;
+  --saffron: #FFDC5C;
+  --spectrum: linear-gradient(270deg, #FD02F5, #FA3D1D 15.94%, #FFB005 42.76%, #E1E1FE 72.48%, #0358F7 100.02%, #340B05 150.75%);
+  /* ↑ Dia 原始漸層，保留供參考（含 #340B05 深棕、頭尾不同色，平鋪會有接縫），實際用下面這組 */
+  --spectrum-loop: linear-gradient(270deg, #FD02F5 0%, #FA3D1D 16%, #FFB005 43%, #E1E1FE 72%, #0358F7 88%, #FD02F5 100%);
+  --spectrum-period: 9rem;      /* 一個色週期的實際寬度（固定 rem，不是元素 %）：4.5rem hero 與 9rem running rule 流速一致 */
+  --spectrum-cycle: 7s;         /* 全份唯一的持續動作速度 */
+  --spectrum-phase: -0.9rem;    /* 靜態幀（PDF／總覽／預覽）與流動起點：左端落在「藍→薰衣草→琥珀」這段，紙上最安靜 */
+  --rule-track: 9rem;           /* running rule 全長 = 8 章 × 1.125rem */
+  /* type */
+  --font-sans: 'Noto Sans TC', system-ui, sans-serif;
+  --font-serif: 'Noto Serif TC', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  /* shape */
+  --radius: 0.75rem;         /* 12px cards */
+  --radius-panel: 1.5rem;    /* 24px panels */
+  --radius-pill: 9999px;
+  --shadow-window: drop-shadow(rgba(0, 0, 0, 0.10) 0px 2px 4px) drop-shadow(rgba(0, 0, 0, 0.12) 0px 18px 24px) drop-shadow(rgba(0, 0, 0, 0.18) 0px 40px 64px);
+  /* motion（Dia：0.2s ease 只動 opacity 與顏色；稍戲劇性的用 0.4,0,0.2,1） */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --slidev-transition-duration: 0.2s;   /* 頁面交叉淡入 */
+}
+
+/* ── 頁面骨架 ─────────────────────────────────────────────── */
+.slidev-layout.pitch {
+  position: relative;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 2.75rem 4.3rem 2.5rem;   /* 上 ≈ 8% 高，左右 = 7% 寬 */
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;             /* 15px 內文 */
+  line-height: 1.6;
+}
+.slidev-layout.pitch.centered { justify-content: center; }
+
+/* 覆蓋 theme-default 的 h1 / p / ul 預設 */
+.slidev-layout.pitch h1 {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;                /* 40px */
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.2rem;
+  opacity: 1;
+}
+.slidev-layout.pitch p { margin: 0; line-height: 1.6; }
+.slidev-layout.pitch ul.list {
+  list-style: disc;
+  margin: 0.35rem 0 0;
+  padding-left: 1.15rem;
+  font-size: 0.875rem;
+  line-height: 1.8;
+}
+.slidev-layout.pitch ul.list li { margin: 0; padding: 0; }
+
+/* ── 文字工具 ─────────────────────────────────────────────── */
+.pitch .eyebrow {
+  display: flex;                    /* 文字靠左、running rule 靠右 */
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;               /* 12px */
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.9rem;
+}
+.pitch .eyebrow-text { min-width: 0; }
+
+/* ── Running rule：每章在眉標右端多走一格 ──
+   灰軌 = 還沒走到的章節（也墊住薰衣草段經過時線不會斷）；::after 是光譜，依 --step / --steps 用 clip-path 揭露。
+   --step 由 layouts/pitch.vue 從眉標前導數字解析，寫在 .pitch 根上。 */
+.pitch .rule.running {
+  position: relative;
+  flex: none;
+  width: var(--rule-track);
+  height: 2px;
+  border-radius: 1px;
+  margin: 0;
+  background: var(--line);
+  animation: none;
+}
+.pitch .rule.running::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--spectrum-loop);
+  background-size: var(--spectrum-period) 100%;
+  background-repeat: repeat-x;
+  background-position: var(--spectrum-phase) 50%;
+  clip-path: inset(0 calc((1 - var(--step, 0) / var(--steps, 8)) * 100%) 0 0);   /* 宣告值 = 最終幀 */
+  animation: marquee var(--spectrum-cycle) linear infinite;
+}
+.pitch .kicker {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--soft);
+}
+.pitch .lead      { font-size: 1.25rem; color: var(--muted); }
+.pitch .statement { font-family: var(--font-serif); font-size: 1.625rem; font-weight: 300; letter-spacing: -0.01em; }
+.pitch .muted { color: var(--muted); }
+.pitch .soft  { color: var(--soft); }
+.pitch .green { color: var(--green); }
+.pitch .red   { color: var(--red); }
+.pitch .bold  { font-weight: 700; }
+.pitch .mono  { font-family: var(--font-mono); font-size: 0.92em; }
+.pitch .tiny  { font-size: 0.75rem; }
+.pitch .micro { font-size: 0.6875rem; }
+.pitch .hl {                        /* 萊姆螢光標記：一頁最多一句 */
+  background: var(--lime);
+  padding: 0.05em 0.35em;
+  border-radius: 0.3rem;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* 貼底區：結語（輕字重襯線）或收尾說明 */
+.pitch .bottom { margin-top: auto; padding-top: 0.75rem; }
+.pitch .close {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: 1.75rem;               /* 28px 預設 */
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+}
+.pitch .close.sm    { font-size: 1.375rem; }
+.pitch .close.md    { font-size: 1.5rem; }
+.pitch .close.lg    { font-size: 1.875rem; }
+.pitch .close.xl    { font-size: 2.125rem; }
+.pitch .close.xxl   { font-size: 2.25rem; }
+.pitch .close.final { font-size: 2.625rem; letter-spacing: -0.02em; }
+
+.pitch .pagenum {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--soft);
+}
+.pitch .placeholder-note {
+  position: absolute;
+  left: 1.5rem;
+  bottom: 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.06em;
+  color: var(--soft);
+}
+
+/* ── 排版容器 ─────────────────────────────────────────────── */
+.pitch .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.pitch .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.pitch .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.pitch .grid-2.cols-3-2 { grid-template-columns: 3fr 2fr; }
+.pitch .stack { display: flex; flex-direction: column; gap: 0.75rem; }
+.pitch .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+
+/* ── 卡片：白底 1px 邊線，不用陰影 ───────────────────────── */
+.pitch .card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.05rem 1.2rem;
+}
+.pitch .card.ink { background: var(--void); color: #fff; border-color: var(--void); }
+.pitch .card.red { background: var(--red-tint); border-color: transparent; }
+.pitch .card-title  { font-family: var(--font-serif); font-weight: 600; font-size: 1.125rem; line-height: 1.3; letter-spacing: -0.01em; margin-bottom: 0.45rem; }
+.pitch .card-kicker { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.65rem; }
+.pitch .card-body   { font-size: 0.875rem; line-height: 1.7; color: var(--muted); }
+.pitch .card.ink .card-body { color: rgba(255, 255, 255, 0.82); }
+
+/* ── StatCard ─────────────────────────────────────────────── */
+.pitch .stat {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem 1rem;
+  min-width: 0;
+}
+.pitch .stat.bare { background: none; border: 0; padding: 0; }
+.pitch .stat-value {
+  font-family: var(--font-serif);
+  font-size: 3.25rem;               /* 52px */
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.6rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pitch .stat.small .stat-value { font-size: 1.875rem; margin-bottom: 0.35rem; }
+.pitch .stat.muted .stat-value { color: var(--muted); }
+.pitch .stat.green .stat-value { color: var(--green); }
+.pitch .stat.red   .stat-value { color: var(--red); }
+.pitch .stat-label { font-size: 0.8125rem; color: var(--muted); line-height: 1.5; }
+
+/* ── Chip：9999 藥丸，linen 填色 ──────────────────────────── */
+.pitch .chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  background: var(--linen);
+  border: 1px solid transparent;
+  color: var(--ink);
+}
+.pitch .chip.red   { background: var(--red-tint);   color: var(--red); }
+.pitch .chip.green { background: var(--green-tint); color: var(--green); }
+.pitch .chip.ink   { background: var(--void);       color: #fff; }
+
+/* ── 箭頭 / Flow：節點也是藥丸 ────────────────────────────── */
+.pitch .arrow { flex: none; width: 1rem; height: 1rem; color: var(--soft); }
+.pitch .flow { display: flex; align-items: center; gap: 0.35rem; }
+.pitch .flow-node { display: flex; align-items: center; gap: 0.35rem; flex: 1; min-width: 0; }
+.pitch .flow > .flow-node:first-child > .arrow { display: none; }
+.pitch .flow-box {
+  flex: 1;
+  background: var(--linen);
+  border-radius: var(--radius-pill);
+  padding: 0.6rem 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+}
+.pitch .flow-node.dark .flow-box { background: var(--void); color: #fff; }
+
+/* ── TierRow（S7） ────────────────────────────────────────── */
+.pitch .tier-grid {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr 2rem 9.5rem 4.25rem 4.25rem;
+  column-gap: 0.9rem;
+  align-items: center;
+}
+.pitch .tier-head {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--soft);
+  padding-bottom: 0.45rem;
+}
+.pitch .tier-head > :nth-child(5), .pitch .tier-head > :nth-child(6) { text-align: center; }
+.pitch .tier-row { padding: 0.8rem 0; border-top: 1px solid var(--divider); }
+.pitch .tier-row:last-child { border-bottom: 1px solid var(--divider); }
+.pitch .tier-name { font-family: var(--font-serif); font-weight: 600; font-size: 1rem; line-height: 1.3; }
+.pitch .tier-sub  { font-size: 0.75rem; color: var(--muted); }
+.pitch .tier-desc { font-size: 0.8125rem; line-height: 1.6; }
+.pitch .tier-sign svg { display: block; width: 1.6rem; height: 1.6rem; }
+.pitch .tier-sign.eq { color: var(--green); }
+.pitch .tier-sign.ne { color: var(--red); }
+.pitch .tier-note { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+.pitch .tier-flag { display: flex; justify-content: center; }
+.pitch .tier-flag svg { width: 1.1rem; height: 1.1rem; }
+.pitch .tier-flag .on  { color: var(--ink); }
+.pitch .tier-flag .off { color: var(--soft); }
+
+/* ── BarPair（S8，inline SVG） ────────────────────────────── */
+.pitch .barpair svg { display: block; width: 100%; height: auto; }
+.pitch .bar-value { font-family: var(--font-serif); font-weight: 300; font-size: 17px; letter-spacing: -0.02em; fill: var(--ink); }
+.pitch .bar-label { font-family: var(--font-sans); font-weight: 500; font-size: 12px; fill: var(--muted); }
+
+/* ── S9 Runtime 行 ────────────────────────────────────────── */
+.pitch .runtime-line { display: flex; align-items: center; flex-wrap: wrap; gap: 0.45rem; font-size: 0.9375rem; }
+
+/* ── S1：輕字重襯線 display + 光譜漸層線 + 貼紙扇形 ─────────── */
+.pitch .title-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; align-items: center; gap: 2.5rem; }
+.pitch .title-hero {
+  font-family: var(--font-serif);
+  font-size: 3.5rem;                /* 56px */
+  font-weight: 300;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.pitch .title-sub  { font-size: 1.25rem; color: var(--muted); margin-top: 1.2rem; letter-spacing: -0.01em; }
+.pitch .rule {
+  width: 4.5rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--spectrum-loop);
+  background-size: var(--spectrum-period) 100%;
+  background-repeat: repeat-x;
+  background-position: var(--spectrum-phase) 50%;
+  animation: marquee var(--spectrum-cycle) linear infinite;
+  margin: 1.6rem 0 1.4rem;
+}
+/* keyframes 只寫 to，宣告值就是 from：.static 把 duration 歸零後 infinite 動畫顯示宣告值 → PDF、總覽、預覽三處同一幀 */
+@keyframes marquee { to { background-position: calc(var(--spectrum-phase) + var(--spectrum-period)) 50%; } }
+.pitch .title-team  { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); }
+.pitch .title-event { font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--soft); margin-top: 0.3rem; }
+
+.pitch .title-aside { display: flex; align-items: center; justify-content: center; }
+.pitch .fan { position: relative; width: 100%; height: 19.5rem; }
+.pitch .sticker {
+  position: absolute;
+  display: block;
+  border-radius: var(--radius);
+  border: 6px solid #fff;
+  filter: var(--shadow-window);     /* 只有「窗格」用三層陰影，卡片一律 1px 邊線 */
+  object-fit: cover;
+}
+.pitch .fan-left  { left: 0;      top: 0.6rem;    width: 9.75rem; z-index: 1; transform: rotate(var(--rot)); }
+.pitch .fan-right { right: 0;     top: 0;         width: 10.5rem; z-index: 2; transform: rotate(var(--rot)); }
+.pitch .fan-front { left: 3.6rem; bottom: 0.2rem; width: 15.5rem; z-index: 3; transform: rotate(var(--rot)); }
+.pitch.anim .fan .sticker.rv.zoom { animation-name: zoomin-rot; }
+@keyframes zoomin-rot { from { opacity: 0; } to { opacity: 1; } }
+.pitch .shot { width: 100%; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; }
+
+/* ── S3：大數字卡 + 強調藥丸 + 動態數字 ─────────────────────── */
+.pitch .s3-body { display: flex; flex-direction: column; justify-content: center; flex: 1; gap: 1.6rem; padding-bottom: 1rem; }
+.pitch .stats-hero .stat { padding: 1.6rem 1.5rem 1.4rem; }
+.pitch .stats-hero .stat-value { font-size: 4.25rem; margin-bottom: 0.7rem; }   /* 68px */
+.pitch .stats-hero .stat-label { font-size: 0.9375rem; }
+.pitch .countup { font-variant-numeric: tabular-nums; }
+.pitch .sway { display: inline-block; animation: breathe 2.4s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { color: var(--ink); } 50% { color: var(--soft); } }
+.pitch .chips.strong { gap: 0.8rem; }
+.pitch .chips.strong .chip { flex: 1; justify-content: center; font-size: 1.125rem; font-weight: 600; padding: 0.7rem 1.2rem; letter-spacing: 0.02em; }
+
+/* ── S4：git diff + 打字 + 引線註解 ─────────────────────────── */
+.pitch .s4-grid { position: relative; display: grid; grid-template-columns: 1fr 1.15fr; gap: 3rem; align-items: start; }
+.pitch .diff {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.75;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+.pitch .diff-line { display: flex; gap: 0.7rem; padding: 0.05rem 0.7rem; white-space: pre; }
+.pitch .diff-line .g { flex: none; width: 1ch; color: var(--soft); user-select: none; }
+.pitch .diff-line.ctx { color: var(--soft); }
+.pitch .diff-line.del { background: var(--red-tint); color: var(--red); }
+.pitch .diff-line.del .g { color: var(--red); }
+.pitch .diff-line.add { background: var(--green-tint); color: var(--green); font-weight: 700; }
+.pitch .diff-line.add .g { color: var(--green); }
+
+.pitch .typein { position: relative; display: inline-block; white-space: pre; }
+.pitch .typein-ghost { visibility: hidden; }
+.pitch .typein-live { position: absolute; left: 0; top: 0; white-space: pre; }
+.pitch .caret { display: inline-block; width: 0.55em; height: 1.05em; margin-left: 0.05em; vertical-align: -0.15em; background: currentColor; animation: blink 0.9s steps(2, start) infinite; }
+@keyframes blink { to { visibility: hidden; } }
+
+.pitch .callouts { display: flex; flex-direction: column; gap: 0.9rem; }
+.pitch .callout { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.85rem 1rem 0.9rem; }
+.pitch .callout-head { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.5rem; }
+.pitch .tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: var(--linen);
+  color: var(--ink);
+}
+.pitch .tag.ink { background: var(--void); color: #fff; }
+.pitch .callout-row { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.8125rem; line-height: 1.55; padding: 0.24rem 0; }
+.pitch .callout-row + .callout-row { border-top: 1px solid var(--line); }
+.pitch .callout-row .mark {
+  flex: none;
+  width: 2.6rem;
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.12rem 0;
+  border-radius: var(--radius-pill);
+  margin-top: 0.1rem;
+  background: var(--linen);
+  color: var(--muted);
+}
+.pitch .callout-row.good .mark { background: var(--green-tint); color: var(--green); }
+.pitch .callout-row.bad  .mark { background: var(--red-tint);   color: var(--red); }
+.pitch .callout-row.hit  { background: var(--red-tint); margin: 0.15rem -0.5rem 0; padding: 0.4rem 0.5rem; border-radius: 0.5rem; border-top: 0; }
+.pitch .callout-row.hit .mark { background: var(--red); color: #fff; }
+.pitch .leaders { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.pitch .leaders path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.pitch .leaders circle { opacity: 0; }
+.pitch.anim .leaders:not(.slidev-vclick-hidden) path   { animation: draw 0.5s ease-out forwards; animation-delay: calc((var(--d, 0) + var(--i, 0) * 300) * 1ms); }
+.pitch.anim .leaders:not(.slidev-vclick-hidden) circle { animation: fadein 0.2s ease-out forwards; animation-delay: calc((var(--d, 0) + var(--i, 0) * 300 + 150) * 1ms); }
+.pitch.static .leaders path { stroke-dashoffset: 0; }
+.pitch.static .leaders circle { opacity: 1; }
+@keyframes fadein { to { opacity: 1; } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* ══════════════════════════════════════════════════════════════
+   進頁節奏（entrance）
+   .rv 元素在 .anim 下依 --d（毫秒）延遲淡入；.pending 先隱藏；
+   .static（PDF / 總覽 / 預覽）一律顯示最終狀態、所有 keyframe 動畫瞬間完成。
+   Dia 的動作哲學：「東西改變顏色，不改變位置」。所以這裡只有 opacity 與顏色，
+   沒有位移、沒有 scale、沒有回彈。
+   ══════════════════════════════════════════════════════════════ */
+.pitch.pending .rv,
+.pitch.pending > .eyebrow,
+.pitch.pending > h1 { opacity: 0; transition: opacity 0.2s ease; }   /* 離開頁面時跟著交叉淡出 */
+
+.pitch.anim > .eyebrow { animation: fade 0.4s ease both; }
+.pitch.anim > h1      { animation: fade 0.45s ease both 80ms; }
+.pitch.anim .rv {
+  animation: fade 0.45s ease both;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+.pitch.anim .rv.grow  { animation-name: growx; animation-duration: 0.5s; animation-timing-function: var(--ease); }
+/* 強調：先實心色、再褪成淡色（顏色變化，不是動作） */
+.pitch.anim .rv.flash { animation: fade 0.3s ease both, flash 0.7s var(--ease) both; animation-delay: calc(var(--d, 0) * 1ms), calc((var(--d, 0) + 250) * 1ms); }
+.pitch.anim .rv.flash.chip.red { --flash-from: var(--red); --flash-to: var(--red-tint); --flash-ink-from: #fff; --flash-ink-to: var(--red); }
+
+.pitch.static .rv, .pitch.static > .eyebrow, .pitch.static > h1 { opacity: 1; animation: none; }
+.pitch.static *, .pitch.static *::before, .pitch.static *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+}
+
+@keyframes fade  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes growx { from { opacity: 1; transform: scaleX(0); } to { opacity: 1; transform: none; } }
+@keyframes flash { from { background-color: var(--flash-from); color: var(--flash-ink-from); } to { background-color: var(--flash-to); color: var(--flash-ink-to); } }
+.pitch .rv.grow { transform-origin: left center; }
+/* 光譜線：進場長出後，繼續跑 marquee（Dia 唯一允許的持續動作） */
+.pitch.anim .rule.rv.grow { animation: growx 0.5s var(--ease) both, marquee var(--spectrum-cycle) linear infinite; animation-delay: calc(var(--d, 0) * 1ms), calc(var(--d, 0) * 1ms); }
+/* running rule 進場：從上一章的長度「揭露」到本章（clip-path，漸層不變形），120ms 起，落在眉標淡入之後、第一個 .rv 之前 */
+.pitch.anim .rule.running::after {
+  animation: reveal 0.5s var(--ease) 120ms both, marquee var(--spectrum-cycle) linear 120ms infinite;
+}
+@keyframes reveal {
+  from { clip-path: inset(0 calc((1 - (var(--step, 0) - 1) / var(--steps, 8)) * 100%) 0 0); }
+  to   { clip-path: inset(0 calc((1 - var(--step, 0) / var(--steps, 8)) * 100%) 0 0); }
+}
+/* S10：結語上方的 hero rule。growx 依 --d 長出，marquee 鎖 120ms 起跑 → 與 running rule 同相位，兩條線讀成同一條 */
+.pitch .close .rule { margin: 0 0 1rem; }
+.pitch.anim .close .rule.rv.grow { animation-delay: calc(var(--d, 0) * 1ms), 120ms; }
+
+/* ── S7：符號 / 勾勾在該列 v-click 出現時 draw-on ── */
+.pitch .tier-sign path, .pitch .tier-flag path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.pitch .tier-row:not(.slidev-vclick-hidden) .tier-sign path { animation: draw 0.45s ease-out 0.25s forwards; }
+.pitch .tier-row:not(.slidev-vclick-hidden) .tier-sign path.slash { animation-delay: 0.6s; }
+.pitch .tier-row:not(.slidev-vclick-hidden) .tier-flag path { animation: draw 0.35s ease-out 0.55s forwards; }
+.pitch .tier-row.slidev-vclick-target { transition: opacity 0.3s ease; }
+
+/* ── S9：apply 被劃掉 ── */
+.pitch .strike { position: relative; }
+.pitch .strike::after {
+  content: '';
+  position: absolute;
+  left: -0.1em; right: -0.1em; top: 52%;
+  height: 2px;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.pitch.anim .strike::after { animation: growx 0.35s ease-out both; animation-delay: calc(var(--d, 0) * 1ms); }
+.pitch.static .strike::after { transform: none; }
+
+/* ── S10：清單用勾勾 / 空圈當 bullet ── */
+.pitch ul.list.done, .pitch ul.list.todo { list-style: none; padding-left: 0; }
+.pitch ul.list.done li, .pitch ul.list.todo li { position: relative; padding-left: 1.5rem; }
+.pitch ul.list.done li::before, .pitch ul.list.todo li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0.45em;
+  width: 0.95rem; height: 0.95rem;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.pitch ul.list.done li::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315803D' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+}
+.pitch ul.list.todo li::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-dasharray='3 3'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E");
+}
+
+/* ── S3：兩種錯法並排。卡片撐滿標題與結語之間，內容垂直平均分布 ── */
+.pitch .wrongs { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem; flex: 1; align-content: center; margin: 0.25rem 0 0.5rem; }
+.pitch .wrongs .card { display: flex; flex-direction: column; gap: 1rem; min-width: 0; padding: 1.3rem 1.4rem 1.35rem; }
+.pitch .wrongs .card-kicker { margin: 0; }
+.pitch .wrongs .diff { font-size: 0.78rem; line-height: 1.85; }
+.pitch .verdicts { display: flex; flex-direction: column; gap: 0.5rem; }
+.pitch .wrongs .callout-row { font-size: 1rem; padding: 0.5rem 0.65rem; border-radius: 0.5rem; border-top: 0; align-items: center; }
+.pitch .wrongs .callout-row.hit { margin: 0; }
+.pitch .wrongs .callout-row .mark { margin-top: 0; }
+.pitch .diff, .pitch .mono { font-variant-ligatures: none; }   /* JetBrains Mono 會把 >= 連成 ≥ */
+
+/* ── S4：四道門 ── */
+.pitch .gates { gap: 1rem; margin-top: 0.4rem; }
+.pitch .gates .card { padding: 1.7rem 1.6rem 1.6rem; }
+.pitch .gates .card-title { font-size: 1.5rem; }
+.pitch .gates .gate-no { width: 1.75rem; height: 1.75rem; font-size: 0.875rem; }
+.pitch .gates .card-body { font-size: 1.125rem; line-height: 1.5; color: var(--ink); margin-top: 0.3rem; }
+.pitch .gates .card.ink .card-body { color: #fff; }
+.pitch .gate-head { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.4rem; }
+.pitch .gate-head .card-title { margin: 0; }
+.pitch .gate-head .tag { margin-left: auto; text-transform: none; letter-spacing: 0.02em; font-size: 0.625rem; }
+.pitch .gate-no {
+  flex: none; width: 1.4rem; height: 1.4rem; border-radius: var(--radius-pill);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 0.75rem; background: var(--linen); color: var(--ink);
+}
+.pitch .card.ink .gate-no { background: rgba(255,255,255,0.14); color: #fff; }
+.pitch .card.ink .tag { background: rgba(255,255,255,0.14); color: #fff; }
+
+/* ── S5：三字卡 ── */
+.pitch .words .stat-value { font-size: 3.25rem; }
+.pitch .words .stat-label { font-size: 0.875rem; }
+
+/* ── S6：索引矩陣 ── */
+.pitch .matrix { display: grid; grid-template-columns: 1fr auto auto; column-gap: 1.2rem; row-gap: 0; font-size: 0.875rem; }
+.pitch .mrow { display: contents; }
+.pitch .mrow > * { padding: 0.32rem 0; border-top: 1px solid var(--line); align-self: center; }
+.pitch .mrow:first-child > * { border-top: 0; }
+.pitch .mrow .chip { font-size: 0.75rem; padding: 0.15rem 0.6rem; justify-self: end; }
+
+/* ── S5：demo 影片視窗 + 章節藥丸 ── */
+.pitch .demo-window {
+  width: 44rem;                       /* 16:9 → 24.75rem 高，剛好放得下標題與藥丸 */
+  max-width: 100%;
+  margin: 0.2rem auto 0;
+  border-radius: var(--radius);
+  border: 6px solid #fff;
+  background: #fff;
+  overflow: hidden;
+  filter: var(--shadow-window);        /* 跟 S1 貼紙一樣，只有「視窗」用三層陰影 */
+}
+.pitch .demo-window video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #fff; object-fit: cover; }
+.pitch .chapters { display: flex; align-items: center; justify-content: center; gap: 0.35rem; margin-top: 1rem; }
+.pitch .chapter { cursor: pointer; font: inherit; font-size: 0.8125rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+.pitch .chapter.on { background: var(--void); color: #fff; }
+
+/* First draft: preserve reference styling and keep the full SQL example visible. */
+.pitch .wrongs .diff-line { white-space: pre-wrap; gap: 0.4rem; padding-inline: 0.4rem; }
+.pitch .wrongs .typein, .pitch .wrongs .typein-live { white-space: pre-wrap; }
+.pitch .wrongs .diff { font-size: 0.78rem; }
+.pitch .demo-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.pitch .demo-window { width: 33rem; }
+.pitch .demo-outline { flex: 1; padding: 1.8rem 2.2rem; background: white; border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-direction: column; }
+.pitch .demo-outline h2 { font-family: var(--font-serif); font-size: 1.9rem; line-height: 1.4; margin: 0.25rem 0 0.7rem; }
+.pitch .demo-outline .lead { font-size: 1.1rem; max-width: 42rem; }
+.pitch .demo-step { font-family: var(--font-serif); font-size: 3.5rem; line-height: 1.2; }
+.pitch .demo-disclosure { margin-top: auto; padding-top: 1rem; }
+.pitch .chapter:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+/* Keep demo chapter buttons above Slidev's hover navigation toolbar. */
+.pitch .demo-stage { padding-bottom: 1.5rem; }

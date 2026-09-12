@@ -1,0 +1,9 @@
+node_modules/
+dist/
+public/fonts/
+public/video/*.mp4
+public/video/*.mov
+public/video/*.webm
+.build/
+.DS_Store
+/pitch-deck.pdf

@@ -1,0 +1,27 @@
+{
+  "name": "pitch-deck",
+  "private": true,
+  "version": "1.0.0",
+  "description": "肥宅快樂水 — Sea × OpenAI Codex Hackathon Taiwan pitch deck (Slidev, fully offline)",
+  "type": "module",
+  "scripts": {
+    "dev": "slidev slides.md --port 3030",
+    "build": "slidev build slides.md",
+    "export": "slidev export slides.md --output pitch-deck.pdf",
+    "export:notes": "slidev export-notes slides.md --output pitch-notes.pdf",
+    "fonts": "node scripts/copy-fonts.mjs",
+    "setup": "npm install && npm run fonts"
+  },
+  "dependencies": {
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/noto-sans-tc": "5.3.0",
+    "@fontsource/noto-serif-tc": "5.3.0",
+    "@slidev/cli": "52.19.1",
+    "@slidev/theme-default": "0.25.0",
+    "playwright-chromium": "1.62.1",
+    "vue": "3.5.42"
+  },
+  "overrides": {
+    "floating-vue": "5.2.2"
+  }
+}

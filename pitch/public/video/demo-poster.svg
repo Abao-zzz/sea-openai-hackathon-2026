@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <rect width="1920" height="1080" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="1920" height="56" fill="#EFEFEF"/>
+  <circle cx="36" cy="28" r="9" fill="#D6D6D6"/><circle cx="64" cy="28" r="9" fill="#D6D6D6"/><circle cx="92" cy="28" r="9" fill="#D6D6D6"/>
+  <text x="960" y="520" text-anchor="middle" font-family="JetBrains Mono, Menlo, monospace" font-size="34" letter-spacing="4" fill="#888888">DEMO · SSMS 錄影</text>
+  <text x="960" y="590" text-anchor="middle" font-family="Noto Sans TC, system-ui, sans-serif" font-size="30" fill="#636363">放入 public/video/demo.mp4 後自動接上</text>
+  <text x="960" y="650" text-anchor="middle" font-family="Noto Sans TC, system-ui, sans-serif" font-size="26" fill="#888888">地圖 → 掃描 → 退回 → 放行 → 進版 → 退版</text>
+</svg>
