@@ -32,8 +32,7 @@ centered: true
 <div class="title-grid">
 <div class="title-block">
 <h1 class="title-hero"><span class="rv" style="display:block">沒人敢碰的 SQL，</span><span class="rv" style="display:block;--d:220">從此有人接手。</span></h1>
-<div class="title-sub rv" style="--d:600">一個會自己說「不」的 SP 優化 agent。
-驗證通過，才交給人套用。</div>
+<div class="title-sub rv" style="--d:600"><span class="title-product">SQL Performance Agent</span><span class="title-promise">驗證通過，才交給人確認套用。</span></div>
 <div class="rule rv grow" style="--d:900"></div>
 <div class="title-team rv" style="--d:1100">肥宅快樂水</div>
 <div class="title-event rv" style="--d:1200">2026 Sea x OpenAI Regional Codex Hackathon TW</div>
@@ -48,7 +47,9 @@ centered: true
 </div>
 
 <!--
-大家好，我們是肥宅快樂水。今天帶來的是一個會自己說「不」的 SP 優化 agent。候選通過驗證後，才交給人確認套用。
+大家好，我們是肥宅快樂水。
+很多團隊都有一些跑得慢、卻沒人敢改的預存程序，因為一改，就怕影響既有業務。
+我們做的 SQL Performance Agent，是面向 SQL Server 的效能優化 Agent，協助找出問題、提出改寫，再透過程式驗證。驗證通過後，才由工程師確認套用。
 -->
 
 ---
@@ -57,15 +58,11 @@ eyebrow: 01 · PROBLEM · 問題
 
 # 企業資料庫裡，沒人敢碰的 SQL
 
-<div class="s3-body">
-<div class="grid-3 problem-stats">
-<StatCard class="rv" style="--d:200"><template #value><CountUp :to="500" suffix="+" :delay="500" /></template>Stored Procedure</StatCard>
-<StatCard class="rv" style="--d:380"><template #value>？支</template>半年未使用</StatCard>
-<StatCard class="rv" style="--d:560"><template #value>2–3 hr</template>SP 層層相依</StatCard>
-
-<StatCard class="rv" style="--d:1900"><template #value>0</template>測試</StatCard>
-<StatCard class="rv" style="--d:2150"><template #value>沒有</template>版本控制</StatCard>
-<StatCard class="rv" style="--d:2400"><template #value>已離職</template>開發者</StatCard>
+<div class="problem-editorial">
+<section class="problem-anchor rv" style="--d:200"><div class="problem-big"><CountUp :to="500" suffix="+" :delay="500" /></div><div class="problem-anchor-label">Stored Procedures</div></section>
+<div class="problem-details">
+<div class="problem-observations"><section class="rv" style="--d:400"><div class="problem-number">？<small>支</small></div><div class="problem-caption">半年未使用</div></section><section class="rv" style="--d:600"><div class="problem-number">2–3<small>hr</small></div><div class="problem-caption">單次執行耗時</div></section></div>
+<div class="problem-gaps"><section class="rv" style="--d:900"><div class="problem-gap-value">0</div><div class="problem-caption">測試</div></section><section class="rv" style="--d:1100"><div class="problem-gap-value"><mark>沒有</mark></div><div class="problem-caption">版本控制</div></section><section class="rv" style="--d:1300"><div class="problem-gap-value">已離職</div><div class="problem-caption">開發者</div></section></div>
 </div>
 </div>
 
@@ -99,34 +96,34 @@ eyebrow: 03 · WHY NOT SOLVED · 為什麼 AI 還沒解決
 
 # AI 早就會改。錯的方式有兩種。
 
-<div class="grid-2 wrongs">
-<div class="card rv" style="--d:200">
+<div class="grid-2 wrongs wrongs-editorial">
+<div class="failure-panel rv" style="--d:200">
 <div class="card-kicker">錯法一 · 改壞語意</div>
+<div class="failure-result">
+<div class="failure-headline">漏了資料</div>
+<div class="failure-evidence">NULL 列消失，卻不報錯</div>
+</div>
 <div class="diff">
 <div class="diff-line ctx"><span class="g"> </span><span>-- 找出 Region 為空的客戶</span></div>
 <div class="diff-line del"><span class="g">-</span><span>WHERE ISNULL(c.Region, '') = ''</span></div>
 <div class="diff-line add"><span class="g">+</span><span><TypeIn text="WHERE c.Region = ''" :delay="900" /></span></div>
 </div>
-<div class="failure-result">
-<div class="failure-headline">漏了資料</div>
-<div class="failure-evidence">NULL 列消失，卻不報錯</div>
 </div>
-</div>
-<div class="card rv" style="--d:1500">
+<div class="failure-panel rv" style="--d:1500">
 <div class="card-kicker">錯法二 · 看起來更快，其實沒快</div>
+<div class="failure-result">
+<div class="failure-headline">讀取量沒變</div>
+<div class="failure-evidence">無索引 <span class="failure-metric">49 → 49</span> <span class="failure-unit">logical reads</span></div>
+</div>
 <div class="diff">
 <div class="diff-line ctx"><span class="g"> </span><span>-- 找出某一天的訂單</span></div>
 <div class="diff-line del"><span class="g">-</span><span>WHERE CONVERT(date, CreatedAt) = @d</span></div>
 <div class="diff-line add"><span class="g">+</span><span><TypeIn text="WHERE CreatedAt >= @d&#10;  AND CreatedAt < DATEADD(day, 1, @d)" :delay="2100" /></span></div>
 </div>
-<div class="failure-result">
-<div class="failure-headline">讀取量沒變</div>
-<div class="failure-evidence">無索引 <span class="failure-metric">49 → 49</span> <span class="failure-unit">logical reads</span></div>
-</div>
 </div>
 </div>
 
-<div class="close xl rv" style="--d:3600">缺的不是生成，是證明。</div>
+<div class="close xl rv" style="--d:3600">缺的不是生成，是<mark>證明</mark>。</div>
 
 <!--
 第一個例子把 ISNULL 拿掉，可能更利於索引查找，但會遺漏 Region 為 NULL 的列。第二個改成日期半開區間，實際效益仍依索引與資料而定。49 與 49 是 handoff 的測試案例值。模型可以提案，資料庫驗證才能決定是否採用。
@@ -210,75 +207,58 @@ eyebrow: 08 · VALUE · 應用價值
 -->
 
 ---
-eyebrow: 09 · CODEX
+eyebrow: 09 · CODEX · 應用深度
 ---
 
-# Codex 與 OpenAI 的分工
+# 從想法到上台，Codex 全程參與。
 
-<div class="grid-2 rv" style="--d:200">
-<div class="card"><div class="card-kicker">開發時</div><div class="card-title">Codex 提案，測試與 review 把關</div><div class="card-body">程式碼需要通過檢查，才能成為產品的一部分。</div></div>
-<div class="card"><div class="card-kicker">產品運行時</div><div class="card-title">OpenAI 產生 SQL 候選</div><div class="card-body">平台執行預檢與 Snapshot 驗證，由人決定是否套用。</div></div>
+<div class="codex-with-history">
+<div class="codex-depth">
+<div class="codex-depth-row rv" style="--d:200"><div class="codex-depth-title"><mark>一起想</mark></div><div class="codex-depth-work">討論與設計</div><div class="codex-depth-detail">釐清需求，推敲解法</div></div>
+<div class="codex-depth-row rv" style="--d:450"><div class="codex-depth-title"><mark>一起做</mark></div><div class="codex-depth-work">Agent ＋ SSMS Extension</div><div class="codex-depth-detail">把設計落成產品</div></div>
+<div class="codex-depth-row rv" style="--d:700"><div class="codex-depth-title"><mark>一起呈現</mark></div><div class="codex-depth-work">Codex ＋ Slidev</div><div class="codex-depth-detail">文案、版面、互動，逐頁迭代</div></div>
+<div class="codex-depth-close rv" style="--d:1100">這份簡報，也由 Codex 協作完成。</div>
 </div>
-<div class="card mt-3 rv" style="--d:1300">
-<div class="card-kicker">Runtime · OpenAI 只出現在一格</div>
-<div class="chips">
-<Chip class="rv" style="--d:1500">掃描</Chip><FlowArrow class="rv" style="--d:1600" />
-<Chip class="rv" style="--d:1700">呼叫追蹤</Chip><FlowArrow class="rv" style="--d:1800" />
-<Chip tone="ink" class="rv" style="--d:1900">產生候選 · OpenAI</Chip><FlowArrow class="rv" style="--d:2000" />
-<Chip class="rv" style="--d:2100">六關預檢</Chip><FlowArrow class="rv" style="--d:2200" />
-<Chip class="rv" style="--d:2300">Snapshot Dry Run</Chip><FlowArrow class="rv" style="--d:2400" />
-<Chip class="rv" style="--d:2500">套用</Chip>
-</div>
-<div class="runtime-line mt-2 rv" style="--d:2800">下一步：Codex 透過 MCP 走同一道門。沒有 <span class="mono red bold strike" style="--d:3400">apply</span>。</div>
-</div>
+<aside class="codex-history rv" style="--d:850">
+<div class="history-label">本次 hackathon 合計使用</div>
+<div class="history-total"><small>≈</small><b>1.83</b><span>億</span></div>
+<div class="history-token-unit">tokens</div>
+<CodexActivity />
 
-<div class="close sm rv" style="--d:3700">我們對 Codex 的要求，和對這個 agent 一樣：它提案，測試與 review 判決。</div>
+</aside>
+</div>
 
 
 <!--
-Codex 用於產品開發，程式碼經測試與 review。產品運行時，OpenAI 只負責產生 SQL 候選，掃描、地圖、Dry Run 與套用不呼叫模型。產生候選會送出唯讀 SP body 與一組參數值，plan XML 留在本機。MCP 是下一步，目前不宣稱已完成。
+這頁回答評審對 Codex 應用深度的問題，說明本次 hackathon 的開發過程。團隊使用 Codex 討論問題、梳理需求與設計方案；Agent 與 SSMS extension 的開發也使用 Codex。Pitch deck 則以 Codex 搭配 Slidev 製作，透過逐頁討論、瀏覽器標註與預覽反覆調整文案、元件、互動與版面。重點是 Codex 參與從討論與設計、產品實作到成果表達的多個階段，團隊負責提供產業脈絡與做決策。本 task 本機 token_count 紀錄截至 2026-09-12 14:21（台北）累計 42,562,315 tokens：input 42,498,882（其中 cached input 41,693,184）、output 63,433。快取輸入包含在 input 中，不另行加總；多輪上下文重讀會累加，並非獨立內容量、計費金額或團隊總用量。未量測程式碼生成占比與節省時間。團隊提供目前開發用量 117,000,000 tokens，完成時開發用量以 1.2 倍估算為 140,400,000，再加此簡報 task 的固定時間點 42,562,315，共 182,962,315（約 1.83 億）。目前兩者合計 159,562,315（約 1.60 億）。此計算依開發用量不含本簡報 task 的前提；開發數字由使用者提供，未另行稽核，簡報含快取輸入。本頁談開發工具的使用，不混同產品運行時的模型分工。
 -->
 
 ---
 eyebrow: "10 · TODAY & NEXT · 收尾"
 ---
 
-# Agent 負責驗證，人決定寫回
-
-<div class="grid-2">
-<div class="card rv" style="--d:200">
-<div class="card-title">它決定的</div>
-<ul class="list done">
-<li class="rv" style="--d:450">選哪些 SP、跳過哪些、為什麼</li>
-<li class="rv" style="--d:600">用哪幾組參數證據、改成什麼</li>
-<li class="rv" style="--d:750">六關過不過、Snapshot 過不過、差多少</li>
-<li class="rv" style="--d:900">批次 Top N：逐支自己跑，有預算、有停止條件，通過的排進待審</li>
-</ul>
+<div class="final-spread">
+<div class="final-statement rv" style="--d:150"><h1>沒人敢碰的 SQL，<br>從此<mark>有人接手。</mark></h1><div class="final-values">發現 · 修改 · 驗證 · 可回溯</div><div class="final-human">Agent 推進流程，人確認套用。</div></div>
+<div class="final-roadmap">
+<section class="rv" style="--d:400"><h2>今天</h2><div class="final-roadmap-label">已實作的原型</div><p>掃描與呼叫追蹤<br>AI 改寫與驗證<br>版本紀錄與還原</p></section>
+<section class="rv" style="--d:650"><h2>下一步</h2><p>Codex MCP 整合<br>批次與排程驗收<br>更多 SQL Server 環境</p></section>
 </div>
-<div class="card rv" style="--d:1200">
-<div class="card-title muted">人決定的</div>
-<ul class="list todo muted">
-<li class="rv" style="--d:1450">要不要開下一道門：掃描、預檢或批次、套用</li>
-<li class="rv" style="--d:1600">通過的版本要不要進、進了要不要退</li>
-<li class="rv" style="--d:1750">每次寫回都需要確認，批次通過也只排進待審</li>
-</ul>
-</div>
-</div>
-
-<div class="kicker mt-4 rv" style="--d:2100">今天真的跑起來的</div>
-<div class="chips mt-2">
-<Chip class="rv" style="--d:2250">SP 呼叫追蹤</Chip>
-<Chip class="rv" style="--d:2400">SP 掃描</Chip>
-<Chip class="rv" style="--d:2550">SP 優化與批次驗證</Chip>
-<Chip class="rv" style="--d:2700">SP 版本控制 · 進版 / 退版 / 稽核</Chip>
-</div>
-<div class="muted tiny mt-2 rv" style="--d:3000">下一步：獨立 worker、更多 SQL Server 版本實測、Codex MCP 入口</div>
-
-<div class="close final">
-<div class="rule rv grow" style="--d:3400"></div>
-<span class="rv" style="--d:3600">沒人敢碰的 SQL，從此有人接手。</span>
 </div>
 
 <!--
-Agent 決定選誰、跳過誰、用什麼參數與候選是否通過。批次驗證有預算與停止條件，通過項目進待審，不自動套用。人決定是否啟動下一階段，以及是否進版或退版。目前 SSMS 關閉後工作不繼續，獨立 worker 是下一步。沒人敢碰的 SQL，從此有人接手。謝謝。
+收尾回到核心價值：Agent 串起發現問題、提出修改、執行驗證與保留可回溯紀錄；驗證由規則程式執行，套用仍由人確認。今天完成的是開發原型：SP 掃描與呼叫追蹤、AI 改寫與 Snapshot 驗證、版本及套用歷史。依 repository 的 README 與 WORK-IN-PROGRESS，目前為 5.0.0.4 驗收版，不能等同完成正式發佈；批次 AI 真實證據、完整 SSMS UI、治理排程、Standard 與全新機安裝等驗收仍有待完成。今天時間有限，後续希望完成 Codex MCP 與 SQL Performance Agent 整合，補齊批次／排程端對端驗收，以及更多 SQL Server 環境驗證。已有 LocalService 實作，不再把整個獨立服務寫成尚未開發。最後：沒人敢碰的 SQL，從此有人接手。謝謝。
+-->
+
+---
+centered: true
+pagenum: false
+---
+
+<div class="qa-page">
+<div class="qa-title">Q<span>&</span>A</div>
+<div class="qa-team">SQL Performance Agent</div>
+</div>
+
+<!--
+進入問答環節，停留在此頁回答評審問題。
 -->
