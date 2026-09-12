@@ -192,16 +192,21 @@ eyebrow: 07 · VERDICT · 判定與建議
 eyebrow: 08 · VALUE · 應用價值
 ---
 
-# 能用了，技術債卻留下來。
+# 省下工時，也讓技術債有機會被處理。
 
-<div class="value-estimate rv" style="--d:200">團隊過往經驗</div>
-<div class="value-dashboard">
-<div class="value-main rv" style="--d:350"><div class="value-caption">過去 · 一次救急修正</div><div class="value-big">近 5<span style="font-size:1.3rem"> 個工作日</span></div><div class="value-history">反覆修改、重跑 → 改到能用<br>轉做新功能 → <strong>優化被擱置</strong></div></div>
-<div class="value-side rv" style="--d:650"><div class="value-caption">現在 · 人工操作集中為</div><div class="value-medium value-step-count">3 <span>個步驟</span></div><div class="value-actions"><span>01　送出任務</span><span>02　檢查結果</span><span>03　<mark>確認套用</mark></span></div></div>
+
+<div class="value-examples">
+<section class="value-example rv" style="--d:200"><div class="value-example-label">開發者人工投入 · 團隊經驗估算</div><div class="value-example-change">40 <small>小時</small><span>→</span>2 <small>小時</small></div><div class="value-example-result">工時可減少 <mark>95%</mark></div></section>
+<section class="value-example rv" style="--d:400"><div class="value-example-label">SQL 調校參考</div><div class="value-example-change" style="font-size:2.65rem">28,281<span>→</span>20</div><div class="value-example-result">單表 logical reads 降低 <mark>99.93%</mark></div></section>
+</div>
+<div class="value-possibilities">
+<div class="rv" style="--d:650"><div class="value-old">陳年 SP，沒人敢碰</div><div class="value-new">有依據地<mark>開始改善</mark></div></div>
+<div class="rv" style="--d:800"><div class="value-old">複雜 SP，層層相依</div><div class="value-new">看清關聯，<mark>評估重構</mark></div></div>
+<div class="rv" style="--d:950"><div class="value-old">沒有紀錄，難以追溯</div><div class="value-new">納入版本，<mark>保留退路</mark></div></div>
 </div>
 
 <!--
-根據團隊過往經驗，通常在業務卡住或出問題後才修改 SP。每次修正可能接近一週工作日，本頁以近 5 個工作日表達同一個約略週期，不是精確量測，也不是五天連續人工投入。反覆修改、重新執行 SP，先做到當下能用；後續優先開發新功能，往往沒有時間繼續優化，技術債因而留下來。新流程把人工互動整理成三步：送出任務、檢查結果、確認套用；Agent 負責反覆改寫與驗證。三步是操作步驟數，不能解讀成三分鐘或保證消除全部技術債。目前沒有新流程的實測完成時間，不宣稱節省百分比。
+工時依團隊提供的產業經驗評估：同一 SP 調整任務，人工投入由 40 小時降為 2 小時，節省 38 小時，減少 (40-2)/40 = 95%。這是團隊經驗估算，不是本次 hackathon 實測；人工工時不等於包含資料庫等待的總完成時間。效能引用 Jim Evans 在 WideWorldImporters 範例資料庫的公開調校案例：訂單編號欄位為 nvarchar，查詢原先傳入整數。新增索引後仍需將參數改成匹配的字串型別；Invoices 表 logical reads 從 28,281 降為 20，降低約 99.93%，另有 Orders 表 692 reads。此為該表的讀取量，不是整支 SP 總量，也不是我們產品的實測成果或正式零售客戶案例。故事：每次查一張訂單，舊 SQL 都可能多讀不必要的資料；索引存在仍不保證用得好。Agent 提出改寫，驗證程式檢查結果與讀取量，再讓開發者確認。索引新增屬案例條件，不代表產品已能自動新增索引。來源：https://www.mssqltips.com/sqlservertip/6157/performance-tuning-sql-server-query-without-execution-plan/ 。三項能力對應前面的痛點：相依追蹤與驗證證據讓陳年 SP 有機會被評估及修改；複雜 SP 可先釐清相依、評估逐步重構，不能宣稱已自動完成任意 SP 重構；版本控制從開始納管後保存 diff、套用及還原紀錄，無法補回從未保存的歷史。
 -->
 
 ---

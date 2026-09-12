@@ -731,3 +731,29 @@
 .pitch .verification-reading-row { display: flex; flex-direction: column; gap: .25rem; }
 .pitch .verification-reading-row > span { font-size: .7rem; color: var(--muted); }
 .pitch .verification-reading-row strong { font-size: 1.1rem; font-weight: 400; }
+
+.pitch .efficiency-compare { flex: 1; display: grid; grid-template-columns: 1fr 1.2fr; gap: 3rem; align-items: center; }
+.pitch .efficiency-after { border-left: 1px solid var(--line); padding-left: 2.5rem; }
+.pitch .efficiency-label { font-size: .85rem; color: var(--muted); margin-bottom: 1.2rem; }
+.pitch .efficiency-number { font: 300 4rem/1.3 var(--font-serif); }
+.pitch .efficiency-number span { font: 400 1.1rem var(--font-sans); }
+.pitch .efficiency-sub { color: var(--muted); font-size: .85rem; margin-top: .3rem; }
+.pitch .efficiency-tasks { color: var(--muted); font-size: .95rem; line-height: 1.9; margin-top: 1.5rem; }
+.pitch .efficiency-headline { font: 300 2rem/1.6 var(--font-serif); }
+.pitch .efficiency-headline mark { color: var(--ink); background: var(--lime); border-radius: .3rem; padding: .02em .2em; }
+.pitch .efficiency-benefit { font: 300 1.5rem var(--font-serif); margin-bottom: .4rem; }
+.pitch .efficiency-benefit strong { font-weight: 400; }
+
+.pitch .value-examples-label { font-size: .75rem; color: var(--muted); margin-top: .15rem; }
+.pitch .value-examples { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin: 1.5rem 0 2rem; }
+.pitch .value-example + .value-example { border-left: 1px solid var(--line); padding-left: 2.5rem; }
+.pitch .value-example-label { font-size: .9rem; color: var(--muted); }
+.pitch .value-example-change { font: 300 3rem/1.5 var(--font-serif); white-space: nowrap; }
+.pitch .value-example-change small { font: 400 .9rem var(--font-sans); }
+.pitch .value-example-change > span { font-size: 1.8rem; color: var(--muted); margin: 0 .8rem; }
+.pitch .value-example-result { font-size: 1.1rem; margin-top: .35rem; }
+.pitch .value-example-result mark { background: var(--lime); padding: .05em .3em; border-radius: .3rem; color: var(--ink); }
+.pitch .value-possibilities { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; border-top: 1px solid var(--line); padding-top: 1.5rem; }
+.pitch .value-old { color: var(--muted); font-size: .8rem; margin-bottom: .8rem; }
+.pitch .value-new { font: 300 1.2rem/1.8 var(--font-serif); }
+.pitch .value-new mark { background: #E1E1FE; padding: .05em .15em; border-radius: .25rem; color: var(--ink); }
