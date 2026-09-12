@@ -1,10 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useSlideContext } from '@slidev/client'
-import { useLive } from '../composables/useLive'
-const { $clicks } = useSlideContext()
-const live = useLive()
-const active = computed(() => Math.min(3, Math.max(0, $clicks.value)))
 const steps = [
   { title: '掃描', text: '盤點現有 SP，找出成本最高的項目。' },
   { title: 'SP 呼叫追蹤', text: '看清上下游關聯，再選擇改善對象。' },
@@ -15,8 +9,8 @@ const steps = [
 
 <template>
   <div class="grid-2 gates solution-steps">
-    <div v-for="(step, index) in steps" :key="step.title" class="card" :aria-current="live && index === active ? 'step' : undefined">
-      <div class="gate-head"><span class="gate-no">{{ index + 1 }}</span><span class="card-title step-title" :class="{ 'step-marked': !live || index <= active }" :style="{ '--step-wash': `var(--step-wash-${index + 1})` }">{{ step.title }}</span></div>
+    <div v-for="(step, index) in steps" :key="step.title" class="card">
+      <div class="gate-head"><span class="gate-no">{{ index + 1 }}</span><span class="card-title step-title step-marked" :style="{ '--step-wash': `var(--step-wash-${index + 1})` }">{{ step.title }}</span></div>
       <div class="card-body">{{ step.text }}</div>
     </div>
   </div>
