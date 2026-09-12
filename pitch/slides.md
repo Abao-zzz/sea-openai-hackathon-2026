@@ -137,7 +137,7 @@ eyebrow: 04 · SOLUTION · 我們的解法
 clicks: 3
 ---
 
-# 先證明，再動手。
+# 讓 Agent 接手 SP 優化流程。
 
 <SolutionSteps />
 
@@ -157,70 +157,55 @@ eyebrow: 05 · DEMO
 -->
 
 ---
-eyebrow: 06 · HOW IT VERIFIES · 它為什麼說不
+eyebrow: 06 · VERIFICATION · 驗證方式
 ---
 
-# 它退回了一支「看起來更好」的改寫。
+# 三層驗證，才有依據。
 
-<div class="lead rv" style="--d:150">同一段改寫，資料庫條件不同，判決就不同。</div>
-
-<div class="kicker mt-5 rv" style="--d:1500">六關安全預檢</div>
-<div class="chips mt-2">
-<Chip class="rv" style="--d:1600">兩版皆唯讀</Chip>
-<Chip class="rv" style="--d:1700">有實質變更</Chip>
-<Chip class="rv" style="--d:1800">可編譯</Chip>
-<Chip class="rv" style="--d:1900">輸出欄位契約一致</Chip>
-<Chip class="rv" style="--d:2000">plan warning 消失</Chip>
-<Chip tone="red" class="rv flash" style="--d:2100">estimated cost 改善 ≥ 5%</Chip>
+<div class="proof-list">
+<div class="proof-row rv" style="--d:200"><span class="proof-index">01</span><div class="proof-prompt">SQL 語法<mark>改了什麼？</mark></div><div class="proof-method">抽象語法樹比對<span>AST Comparison</span></div></div>
+<div class="proof-row rv" style="--d:450"><span class="proof-index">02</span><div class="proof-prompt">結果<mark>一致？</mark></div><div class="proof-method">小資料對照<span>模擬環境測試</span></div></div>
+<div class="proof-row rv" style="--d:700"><span class="proof-index">03</span><div class="proof-prompt">真的<mark>更快？</mark></div><div class="proof-method">效能量測<span>Logical reads · 執行計畫</span></div></div>
 </div>
-
-<div class="kicker mt-4 rv" style="--d:2600">同一個改寫，四種索引，兩過兩不過</div>
-<div class="matrix mt-2">
-<div class="mrow rv" style="--d:2750"><span>CreatedAt 沒有索引</span><span class="mono">49 → 49</span><Chip tone="red">不採用</Chip></div>
-<div class="mrow rv" style="--d:2900"><span>只在 included columns</span><span class="mono">45 → 45</span><Chip tone="red">不採用</Chip></div>
-<div class="mrow rv" style="--d:3050"><span>單欄 index key</span><span class="mono">32 → 3</span><Chip tone="green">採用</Chip></div>
-<div class="mrow rv" style="--d:3200"><span>複合索引 leading key</span><span class="mono">45 → 3</span><Chip tone="green">採用</Chip></div>
-</div>
-
-<div class="close sm rv" style="--d:3800">判決裡沒有 LLM。</div>
-<div class="placeholder-note">資料來源：handoff 測試案例記錄。logical reads 為測試值，非現場結果。</div>
 
 <!--
-六關預檢不執行候選：檢查唯讀、實質變更、可編譯、輸出契約、plan warning 與 estimated cost。成本估計改善不能取代實跑。下方是 handoff 的索引測試案例，數值為 logical reads。哪一關退回必須以該次結果為準，不由 reads 反推預檢失敗原因。
+驗證設計分三層：AST comparison 用來檢查結構差異與禁止操作，本身不證明語意等價。模擬環境的小資料測試，以相同資料及參數執行原版與候選，比較欄位、列數與值，涵蓋 NULL、重複值及日期邊界；只支持已測案例的一致性。效能以可比較的資料、參數與環境量測 logical reads、耗時，並檢查執行計畫。Query Store 提供歷史基準，其 runtime stats 是按計畫及時間區間彙總，不能把不同工作負載的平均值直接當成同次測試結果。受控實跑可用 STATISTICS IO 與 Actual Execution Plan。小資料的效能不能直接外推正式規模，索引被使用也不代表效能改善。這是團隊確認的驗證設計，具體完成範圍仍需與產品實作核對。
+
+Microsoft 參考：https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-query-store-runtime-stats-transact-sql
+https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-query-store-plan-transact-sql
+https://learn.microsoft.com/en-us/sql/t-sql/statements/set-statistics-io-transact-sql
 -->
 
 ---
-eyebrow: 07 · WHY IT CAN BE TRUSTED · 通過的怎麼通過
+eyebrow: 07 · VERDICT · 判定與建議
 ---
 
-# 通過的那一支，是怎麼通過的。
+# 程式執行驗證，Agent 解釋結果。
 
-<div class="grid-2 cols-3-2">
-<div class="stack">
-<div class="card rv" style="--d:200">
-<div class="card-title">結果一致，要在 Snapshot 實跑</div>
-<div class="card-body">在指定資料與參數上，比欄位、列數與結果 hash。候選跑三輪，任一組不一致就退回。</div>
-</div>
-<div class="card rv" style="--d:500">
-<div class="card-title">留下來，像一次 commit</div>
-<div class="card-body">先變成版本，再套用。有 diff、有 migration、退得回去。</div>
-</div>
-</div>
-<div class="card rv" style="--d:800">
-<div class="card-kicker">變快，是量出來的 · median logical reads</div>
-<BarPair :before="82" :after="3" :delay="1200" />
-<div class="tiny soft mt-2">handoff 測試案例：82 降至 3，非現場結果</div>
-</div>
-</div>
-
-<div class="close sm rv" style="--d:2600">預檢只是估計。真的少讀，是 Snapshot 說的。</div>
+<VerificationHandoff />
 
 <!--
-結果一致只涵蓋當次資料與選定的參數，不能宣稱所有輸入都等價。候選跑三輪，原版一到三輪，有精確 Query Store baseline 時原版只跑一次。比較欄位簽章、列數與具型別正規化的結果 hash。82 降到 3 是 handoff 的測試案例值。Snapshot 需要建庫權限、消耗 CPU 與 IO，設有上限並在結束後清理。套用前保留版本、migration 與還原紀錄。
+驗證由 rule-based code 執行：程式執行 AST 比對、結果比對與效能量測，依明確規則輸出檢查結果、量測值與判定。這些驗證結果再交給 Agent，由它解釋通過或退回的原因，提出下一步建議。Agent 的解釋不能覆寫驗證判定；證據不足時應明確指出缺少什麼。Agent 可以協調工作流程，但驗證結果來自程式執行，而不是模型憑文字判斷。最後仍由人確認套用。
 -->
 
 ---
-eyebrow: 08 · CODEX
+eyebrow: 08 · VALUE · 應用價值
+---
+
+# 能用了，技術債卻留下來。
+
+<div class="value-estimate rv" style="--d:200">團隊過往經驗</div>
+<div class="value-dashboard">
+<div class="value-main rv" style="--d:350"><div class="value-caption">過去 · 一次救急修正</div><div class="value-big">近 5<span style="font-size:1.3rem"> 個工作日</span></div><div class="value-history">反覆修改、重跑 → 改到能用<br>轉做新功能 → <strong>優化被擱置</strong></div></div>
+<div class="value-side rv" style="--d:650"><div class="value-caption">現在 · 人工操作集中為</div><div class="value-medium value-step-count">3 <span>個步驟</span></div><div class="value-actions"><span>01　送出任務</span><span>02　檢查結果</span><span>03　<mark>確認套用</mark></span></div></div>
+</div>
+
+<!--
+根據團隊過往經驗，通常在業務卡住或出問題後才修改 SP。每次修正可能接近一週工作日，本頁以近 5 個工作日表達同一個約略週期，不是精確量測，也不是五天連續人工投入。反覆修改、重新執行 SP，先做到當下能用；後續優先開發新功能，往往沒有時間繼續優化，技術債因而留下來。新流程把人工互動整理成三步：送出任務、檢查結果、確認套用；Agent 負責反覆改寫與驗證。三步是操作步驟數，不能解讀成三分鐘或保證消除全部技術債。目前沒有新流程的實測完成時間，不宣稱節省百分比。
+-->
+
+---
+eyebrow: 09 · CODEX
 ---
 
 # Codex 與 OpenAI 的分工
@@ -250,7 +235,7 @@ Codex 用於產品開發，程式碼經測試與 review。產品運行時，Open
 -->
 
 ---
-eyebrow: "08 · TODAY & NEXT · 收尾"
+eyebrow: "10 · TODAY & NEXT · 收尾"
 ---
 
 # Agent 負責驗證，人決定寫回

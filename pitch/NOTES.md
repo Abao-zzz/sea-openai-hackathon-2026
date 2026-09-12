@@ -34,16 +34,24 @@
 
 ## 第 7 頁
 
-六關預檢不執行候選：檢查唯讀、實質變更、可編譯、輸出契約、plan warning 與 estimated cost。成本估計改善不能取代實跑。下方是 handoff 的索引測試案例，數值為 logical reads。哪一關退回必須以該次結果為準，不由 reads 反推預檢失敗原因。
+驗證設計分三層：AST comparison 用來檢查結構差異與禁止操作，本身不證明語意等價。模擬環境的小資料測試，以相同資料及參數執行原版與候選，比較欄位、列數與值，涵蓋 NULL、重複值及日期邊界；只支持已測案例的一致性。效能以可比較的資料、參數與環境量測 logical reads、耗時，並檢查執行計畫。Query Store 提供歷史基準，其 runtime stats 是按計畫及時間區間彙總，不能把不同工作負載的平均值直接當成同次測試結果。受控實跑可用 STATISTICS IO 與 Actual Execution Plan。小資料的效能不能直接外推正式規模，索引被使用也不代表效能改善。這是團隊確認的驗證設計，具體完成範圍仍需與產品實作核對。
+
+Microsoft 參考：https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-query-store-runtime-stats-transact-sql
+https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-query-store-plan-transact-sql
+https://learn.microsoft.com/en-us/sql/t-sql/statements/set-statistics-io-transact-sql
 
 ## 第 8 頁
 
-結果一致只涵蓋當次資料與選定的參數，不能宣稱所有輸入都等價。候選跑三輪，原版一到三輪，有精確 Query Store baseline 時原版只跑一次。比較欄位簽章、列數與具型別正規化的結果 hash。82 降到 3 是 handoff 的測試案例值。Snapshot 需要建庫權限、消耗 CPU 與 IO，設有上限並在結束後清理。套用前保留版本、migration 與還原紀錄。
+驗證由 rule-based code 執行：程式執行 AST 比對、結果比對與效能量測，依明確規則輸出檢查結果、量測值與判定。這些驗證結果再交給 Agent，由它解釋通過或退回的原因，提出下一步建議。Agent 的解釋不能覆寫驗證判定；證據不足時應明確指出缺少什麼。Agent 可以協調工作流程，但驗證結果來自程式執行，而不是模型憑文字判斷。最後仍由人確認套用。
 
 ## 第 9 頁
 
-Codex 用於產品開發，程式碼經測試與 review。產品運行時，OpenAI 只負責產生 SQL 候選，掃描、地圖、Dry Run 與套用不呼叫模型。產生候選會送出唯讀 SP body 與一組參數值，plan XML 留在本機。MCP 是下一步，目前不宣稱已完成。
+根據團隊過往經驗，通常在業務卡住或出問題後才修改 SP。每次修正可能接近一週工作日，本頁以近 5 個工作日表達同一個約略週期，不是精確量測，也不是五天連續人工投入。反覆修改、重新執行 SP，先做到當下能用；後續優先開發新功能，往往沒有時間繼續優化，技術債因而留下來。新流程把人工互動整理成三步：送出任務、檢查結果、確認套用；Agent 負責反覆改寫與驗證。三步是操作步驟數，不能解讀成三分鐘或保證消除全部技術債。目前沒有新流程的實測完成時間，不宣稱節省百分比。
 
 ## 第 10 頁
+
+Codex 用於產品開發，程式碼經測試與 review。產品運行時，OpenAI 只負責產生 SQL 候選，掃描、地圖、Dry Run 與套用不呼叫模型。產生候選會送出唯讀 SP body 與一組參數值，plan XML 留在本機。MCP 是下一步，目前不宣稱已完成。
+
+## 第 11 頁
 
 Agent 決定選誰、跳過誰、用什麼參數與候選是否通過。批次驗證有預算與停止條件，通過項目進待審，不自動套用。人決定是否啟動下一階段，以及是否進版或退版。目前 SSMS 關閉後工作不繼續，獨立 worker 是下一步。沒人敢碰的 SQL，從此有人接手。謝謝。
