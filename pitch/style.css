@@ -916,3 +916,34 @@
 .pitch:has(.demo-stage) > .pagenum { display:none; }
 .pitch .demo-stage { position:absolute; inset:2.2rem .8rem .6rem; align-items:center; justify-content:center; }
 .pitch .demo-stage .demo-window { width:auto; height:100%; max-width:100%; aspect-ratio:16 / 9; box-sizing:border-box; border:2px solid #fff; border-radius:.4rem; overflow:hidden; filter:none; box-shadow:0 3px 12px rgba(0,0,0,.08); }
+
+/* Shared marker entrance: text stays still; only the color draws. */
+.pitch mark { --hl-color:var(--lime); }
+.pitch .title-check,
+.pitch .problem-gap-value mark,
+.pitch .verification-reader mark,
+.pitch .value-new mark,
+.pitch .proof-row:nth-child(2) mark,
+.pitch .codex-depth-row:nth-child(2) mark { --hl-color:#e1e1fe; }
+.pitch .title-human { --hl-color:#dfeaff; }
+.pitch .proof-row:first-child mark { --hl-color:color-mix(in srgb, #ffdc5c 50%, white); }
+.pitch .proof-row:nth-child(3) mark,
+.pitch .codex-depth-row:nth-child(3) mark { --hl-color:color-mix(in srgb, #0358F7 12%, white); }
+.pitch mark:not(.title-highlight), .pitch .qa-title span { background:transparent !important; position:relative; isolation:isolate; }
+.pitch mark:not(.title-highlight)::before, .pitch .qa-title span::before { content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; background:var(--hl-color,var(--lime)); }
+.pitch.pending mark::before,
+.pitch.pending .problem-big::before,
+.pitch.pending .qa-title span::before { clip-path:inset(0 100% 0 0); }
+.pitch.anim mark::before,
+.pitch.anim .problem-big::before,
+.pitch.anim .qa-title span::before,
+.pitch.anim .solution-steps .step-title::before { animation:hl-stroke .65s cubic-bezier(.22,.61,.36,1) both; animation-delay:calc(var(--d, 0) * 1ms + 250ms); }
+@keyframes hl-stroke { from { clip-path:inset(0 100% 0 0); } to { clip-path:inset(0 0 0 0); } }
+.pitch.static mark::before,
+.pitch.static .problem-big::before,
+.pitch.static .qa-title span::before,
+.pitch.static .solution-steps .step-title::before { animation:none; clip-path:none; }
+@media (prefers-reduced-motion: reduce) {
+ .pitch.anim mark::before, .pitch.anim .problem-big::before,
+ .pitch.anim .qa-title span::before, .pitch.anim .solution-steps .step-title::before { animation:none; clip-path:none; }
+}
