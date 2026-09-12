@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
@@ -47,7 +47,7 @@ namespace Alyvo.SsmsAiSqlAssistant
   }
   private void Focused(object s,EventArgs e){SessionHub.Current=this;RefreshConnection();SessionHub.Refresh();}
   private void ContextTick(object s,EventArgs e){if(SessionHub.Current==this)RefreshConnection();}
-  private void RefreshConnection(){try{var current=ConnectionContext.Capture();if(context!=null&&context.Fingerprint!=current.Fingerprint)Invalidate("資料庫連線已變更，請重新分析。");context=current;}catch{/* No active SQL connection: analyze/apply will explicitly reject. */}}
+  private void RefreshConnection(){if(View.IsClosed||!View.HasAggregateFocus)return;try{var current=ConnectionContext.Capture();if(context!=null&&context.Fingerprint!=current.Fingerprint)Invalidate("資料庫連線已變更，請重新分析。");context=current;}catch{/* No active SQL connection: analyze/apply will explicitly reject. */}}
   private void Invalidate(string reason){if(Analysis!=null){Analysis.Error=reason;Analysis.Preview=false;Analysis.Cancellation?.Cancel();}Message=reason;Render();SessionHub.Refresh();}
   private void BufferChanged(object s,TextContentChangedEventArgs e){if(!editing)Invalidate("編輯器內容已變更，請重新分析。");}
   private void SelectionChanged(object s,EventArgs e)
@@ -74,7 +74,7 @@ namespace Alyvo.SsmsAiSqlAssistant
     a=new AnalysisState{Original=Sql,OriginalHash=ConnectionContext.Hash(Sql),Start=span.Start.Position,Length=span.Length,Version=span.Snapshot.Version.VersionNumber,Connection=context,ConnectionFingerprint=context.Fingerprint,Busy=true,Status="分析中...",Cancellation=new CancellationTokenSource()};Analysis=a;hidden="";Message="";Render();SessionHub.Current=this;AssistantPackage.Instance?.ShowDetails();SessionHub.Refresh();
     a.Payload=await Task.Run(()=>worker.BuildPayload(a.Original,a.Connection,a.Cancellation.Token));a.Response=await api.Analyze(a.Payload,a.Cancellation.Token);AnalysisHistory.Record(a,"analysis");
     if(a.Response.Candidates.Length>0){a.Status="安全預檢中...";SessionHub.Refresh();a.Preflight=await Task.Run(()=>worker.Preflight(a.Connection,a.Original,a.Candidate.Sql,a.Cancellation.Token));}
-    a.Status=a.Response.AiProvider=="local-rules"?"local-rules：未設定 OpenAI，不產生 AI 候選。":a.Preflight?.Passed==true?"六關安全預檢通過，可建立 Snapshot。":"安全預檢未通過，不可套用。";
+    a.Status=a.Response.AiProvider=="local-rules"?"local-rules：未設定 OpenAI，不產生 AI 候選。":a.NoFurtherSuggestions?"目前沒有進一步優化建議。":a.Response.Candidates.Length==0?"SQL 無需改寫，正在顯示索引建議。":a.Preflight?.Passed==true?"六關安全預檢通過，可建立 Snapshot。":"安全預檢未通過，不可套用。";
     AnalysisHistory.Record(a,"preflight");if(!Matches(a))a.Error="編輯器或連線已變更，請重新分析。";
    }
    catch(Exception e){if(a!=null){a.Error=DbWorker.SafeError(e);a.Status=e is OperationCanceledException?"分析已取消":"分析失敗";}else Message=DbWorker.SafeError(e);Diagnostics.Error(e);}
@@ -123,3 +123,7 @@ namespace Alyvo.SsmsAiSqlAssistant
   }
  }
 }
+
+
+
+

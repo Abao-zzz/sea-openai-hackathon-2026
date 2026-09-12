@@ -83,3 +83,6 @@ public sealed class ApiRoutes(WebApplication app)
         return new(){["$ref"]="#/components/schemas/"+name};
     }
 }
+
+
+

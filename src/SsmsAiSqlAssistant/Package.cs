@@ -64,3 +64,6 @@ namespace Alyvo.SsmsAiSqlAssistant
   public DetailsWindow():base(null){Caption="AI SQL 詳細解析";Content=new DetailsControl();}
  }
 }
+
+
+

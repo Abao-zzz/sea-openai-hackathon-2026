@@ -24,6 +24,7 @@ namespace Alyvo.SsmsAiSqlAssistant
  {
   public readonly Dictionary<int,MapModule> Modules=new Dictionary<int,MapModule>();public readonly List<MapEdge> Edges=new List<MapEdge>();public DateTimeOffset ObservedAt=DateTimeOffset.UtcNow;
   public IEnumerable<MapEdge> Down(int id)=>Edges.Where(e=>e.Caller==id);
+  public string DownstreamCallLines(int id)=>string.Join("；",Down(id).Where(e=>e.Callee.HasValue&&Modules.ContainsKey(e.Callee.Value)&&Modules[e.Callee.Value].IsProcedure).OrderBy(e=>e.Line).Select(e=>(e.Line>0?"第 "+e.Line+" 行":"行號未知")+" → "+Modules[e.Callee.Value].FullName).Distinct());
   public int Up(int id)=>Edges.Where(e=>e.Callee==id).Select(e=>e.Caller).Distinct().Count();
   public int ProcedureCount=>Modules.Values.Count(m=>m.IsProcedure);
   public int IndependentCount=>Modules.Values.Count(m=>m.IsProcedure&&Up(m.Id)==0&&!Down(m.Id).Any());
@@ -83,3 +84,5 @@ SELECT d.referencing_id,d.referenced_id,d.referenced_server_name,d.referenced_da
   }
  }
 }
+
+

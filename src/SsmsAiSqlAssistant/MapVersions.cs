@@ -37,7 +37,7 @@ namespace Alyvo.SsmsAiSqlAssistant
  }
  public sealed class SpVersion
  {
-  public int Number;public string Sql,Hash,Author,Reason,Diff,BaseHash,State="未套用",Kind="人工",DownSql,UpSql;public DateTimeOffset CreatedAt=DateTimeOffset.UtcNow;
+  public int Number;public int? RestoredFromVersion;public string Sql,Hash,Author,Reason,Diff,BaseHash,State="未套用",Kind="人工",DownSql,UpSql;public DateTimeOffset CreatedAt=DateTimeOffset.UtcNow;
  }
  public sealed class VersionFile
  {
@@ -56,11 +56,27 @@ namespace Alyvo.SsmsAiSqlAssistant
   }
   void Save(ConnectionContext c,MapModule m,VersionFile file){var path=PathFor(c,m);var temp=path+"."+Guid.NewGuid().ToString("N")+".tmp";File.WriteAllText(temp,JsonConvert.SerializeObject(file,Formatting.Indented),new UTF8Encoding(false));if(File.Exists(path))File.Replace(temp,path,null);else File.Move(temp,path);}
   T Locked<T>(ConnectionContext c,MapModule m,Func<T> action){using(var mutex=new Mutex(false,"Local\\AlyvoMapVersion_"+Key(c,m))){if(!mutex.WaitOne(TimeSpan.FromSeconds(15)))throw new InvalidOperationException("版本資料正在更新，請稍後再試。");try{return action();}finally{mutex.ReleaseMutex();}}}
+  public SpVersion EnsureBaseline(ConnectionContext c,MapModule m)
+  {
+   if(!m.IsProcedure)throw new InvalidOperationException("只有 SP 建立基準版本。");
+   return Locked(c,m,()=>{var file=Load(c,m);if(file.Versions.Count>0)return file.Versions.OrderBy(v=>v.Number).First();
+    if(string.IsNullOrWhiteSpace(m.Definition))throw new InvalidOperationException("無法建立基準版本：SP 定義未回傳，可能加密或缺少權限。");
+    var source=ProcedureSource.Parse(m.Definition,c.Database);if(source.Schema!=m.Schema||source.Name!=m.Name)throw new InvalidOperationException("SP 定義身分不符。");
+    var version=new SpVersion{Number=file.NextNumber++,Kind="基準",State="基準快照",Sql=m.Definition,Hash=source.Hash,BaseHash=source.Hash,Author=Environment.UserDomainName+"\\"+Environment.UserName,Reason="首次載入時保存資料庫現有定義；未執行或修改 SP。",Diff=Diff(m.Definition,m.Definition),UpSql=source.Sql,DownSql=source.Sql};file.Versions.Add(version);Save(c,m,file);return version;});
+  }
   public SpVersion Create(ConnectionContext c,MapModule m,string sql,string reason,string kind="人工")
   {
    if(!m.IsProcedure||m.Definition==null)throw new InvalidOperationException("SQL Server 沒有回傳這支 SP 的完整定義。");if(string.IsNullOrWhiteSpace(reason))throw new InvalidOperationException("請填寫本次修改原因。");
    var source=ProcedureSource.Parse(sql,c.Database);if(source.Schema!=m.Schema||source.Name!=m.Name)throw new InvalidOperationException("editor 的 SP 與選取物件不符。");var baseline=ProcedureSource.Parse(m.Definition,c.Database);
-   return Locked(c,m,()=>{var file=Load(c,m);var duplicate=file.Versions.FirstOrDefault(v=>v.Hash==source.Hash);if(duplicate!=null)return duplicate;var previous=file.Versions.LastOrDefault()?.Sql??m.Definition;var version=new SpVersion{Kind=kind,Number=file.NextNumber++,Sql=sql,Hash=source.Hash,BaseHash=baseline.Hash,Author=Environment.UserDomainName+"\\"+Environment.UserName,Reason=reason.Trim(),Diff=Diff(previous,sql),UpSql=source.Sql,DownSql=baseline.Sql};file.Versions.Add(version);while(file.Versions.Count>10)file.Versions.RemoveAt(0);Save(c,m,file);return version;});
+   return Locked(c,m,()=>{var file=Load(c,m);var duplicate=file.Versions.FirstOrDefault(v=>v.Hash==source.Hash);if(duplicate!=null)return duplicate;var previous=file.Versions.LastOrDefault()?.Sql??m.Definition;var version=new SpVersion{Kind=kind,Number=file.NextNumber++,Sql=sql,Hash=source.Hash,BaseHash=baseline.Hash,Author=Environment.UserDomainName+"\\"+Environment.UserName,Reason=reason.Trim(),Diff=Diff(previous,sql),UpSql=source.Sql,DownSql=baseline.Sql};file.Versions.Add(version);Save(c,m,file);return version;});
+  }
+  public SpVersion CreateRestore(ConnectionContext c,MapModule m,int targetNumber,string currentDefinition,string reason)
+  {
+   if(!m.IsProcedure||string.IsNullOrWhiteSpace(reason))throw new InvalidOperationException("請選取 SP 並填寫還原原因。");
+   var baseline=ProcedureSource.Parse(currentDefinition,c.Database);
+   if(baseline.Schema!=m.Schema||baseline.Name!=m.Name)throw new InvalidOperationException("目前資料庫 SP 身分不符。");
+   return Locked(c,m,()=>{var file=Load(c,m);var target=file.Versions.Single(v=>v.Number==targetNumber);var source=ProcedureSource.Parse(target.Sql,c.Database);if(source.Schema!=m.Schema||source.Name!=m.Name)throw new InvalidOperationException("還原版本的 SP 身分不符。");
+    var version=new SpVersion{Number=file.NextNumber++,RestoredFromVersion=targetNumber,Kind="還原",Sql=target.Sql,Hash=source.Hash,BaseHash=baseline.Hash,Author=Environment.UserDomainName+"\\"+Environment.UserName,Reason=reason.Trim(),Diff=Diff(currentDefinition,target.Sql),UpSql=source.Sql,DownSql=baseline.Sql};file.Versions.Add(version);Save(c,m,file);return version;});
   }
   public static string Diff(string before,string after)
   {
@@ -97,3 +113,4 @@ namespace Alyvo.SsmsAiSqlAssistant
   {Locked(c,m,()=>{var f=Load(c,m);var v=f.Versions.Single(x=>x.Number==number);v.State=state;var audit=new VersionAudit{Number=number,Operation=operation,BeforeHash=before,AfterHash=after,Author=Environment.UserDomainName+"\\"+Environment.UserName,PreviousHash=f.Audit.LastOrDefault()?.Hash??""};audit.Hash=ConnectionContext.Hash(JsonConvert.SerializeObject(audit));f.Audit.Add(audit);Save(c,m,f);return true;});}
  }
 }
+

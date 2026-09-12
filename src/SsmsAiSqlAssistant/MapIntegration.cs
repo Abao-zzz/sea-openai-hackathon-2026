@@ -60,8 +60,14 @@ namespace Alyvo.SsmsAiSqlAssistant
   public static string QueryText(ConnectionContext context,MapModule module,string definition=null){if(!module.IsProcedure)throw new InvalidOperationException("此物件是 View，不能當作 SP 開啟。");if((definition??module.Definition)==null)throw new InvalidOperationException("SQL Server 沒有回傳這支 SP 的完整定義。");return "USE "+DbWorker.Quote(context.Database)+";\r\nGO\r\n"+(definition??module.Definition).Replace("\r\n","\n").Replace("\r","\n").Replace("\n","\r\n");}
   public static void OpenQuery(ConnectionContext context,MapModule module,string definition=null)
   {
+   if(definition==null){ThreadHelper.JoinableTaskFactory.RunAsync(async()=>{try{var current=await ReadCurrentDefinition(context,module);await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();OpenQuery(context,module,current);}catch(Exception error){await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();MessageBox.Show(error.Message,"讀取資料庫目前 SP");}});return;}
    ThreadHelper.ThrowIfNotOnUIThread();var sql=QueryText(context,module,definition);
-   var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("Microsoft.SqlServer.Management.UI.VSIntegration.Editors.ScriptFactory",false)).FirstOrDefault(t=>t!=null)??throw new InvalidOperationException("找不到 SQL Editor 服務。");
+   var type=ResolveEditorType(()=>AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("Microsoft.SqlServer.Management.UI.VSIntegration.Editors.ScriptFactory",false)).FirstOrDefault(t=>t!=null),()=>{
+    var shell=Package.GetGlobalService(typeof(Microsoft.VisualStudio.Shell.Interop.SVsShell)) as Microsoft.VisualStudio.Shell.Interop.IVsShell;
+    if(shell==null)throw new InvalidOperationException("無法取得 SSMS Shell 服務。");
+    // Registered by SSMS 22 Extensions/Application/SQLEditors.pkgdef.
+    var packageId=new Guid("4058755A-8FBE-41C7-BC99-3DBF5C74BA62");Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(shell.LoadPackage(ref packageId,out var editorPackage));
+   });
    var factory=type.GetProperty("Instance").GetValue(null);var method=type.GetMethods().Single(m=>m.Name=="CreateNewScript"&&m.GetParameters().Length==4&&m.GetParameters()[1].ParameterType.Name=="UIConnectionInfo");var info=Activator.CreateInstance(method.GetParameters()[1].ParameterType);
    void Set(string name,object value)=>info.GetType().GetProperty(name).SetValue(info,value);
    Set("ServerType",new Guid("8c91a03d-f9b4-46c0-a305-b5dcc79ff907"));Set("ServerName",context.Server);Set("AuthenticationType",context.Integrated?0:1);Set("PersistPassword",false);
@@ -69,6 +75,14 @@ namespace Alyvo.SsmsAiSqlAssistant
    var options=(NameValueCollection)info.GetType().GetProperty("AdvancedOptions").GetValue(info);options["DATABASE"]=context.Database;options["ENCRYPT_CONNECTION"]=context.Encrypt.ToString();options["TRUST_SERVER_CERTIFICATE"]=context.TrustServerCertificate.ToString();
    var folder=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Alyvo","SsmsAiSqlAssistant","map-open-scripts");Directory.CreateDirectory(folder);var path=Path.Combine(folder,Guid.NewGuid().ToString("N")+".sql");File.WriteAllText(path,sql);
    method.Invoke(factory,new object[]{path,info,null,module.Name});Diagnostics.Write("SP map opened exact object id "+module.Id);
+  }
+  public static Type ResolveEditorType(Func<Type> find,Action load)
+  {
+   var type=find();if(type!=null)return type;load();return find()??throw new InvalidOperationException("SSMS SQL Editor 套件已載入，但找不到 ScriptFactory 服務。請檢查 SSMS 安裝。");
+  }
+  public static async Task<string> ReadCurrentDefinition(ConnectionContext context,MapModule module)
+  {
+   using(var connection=context.Connect()){await connection.OpenAsync();using(var command=new SqlCommand("SELECT sm.definition FROM sys.sql_modules sm JOIN sys.objects o ON o.object_id=sm.object_id JOIN sys.schemas s ON s.schema_id=o.schema_id WHERE o.object_id=@id AND s.name=@schema AND o.name=@name AND o.type='P';",connection){CommandTimeout=15}){command.Parameters.AddWithValue("@id",module.Id);command.Parameters.AddWithValue("@schema",module.Schema);command.Parameters.AddWithValue("@name",module.Name);var sql=await command.ExecuteScalarAsync() as string;if(sql==null)throw new InvalidOperationException("無法讀取目前 SP 定義；物件可能已移除、變更或缺少權限。請重新掃描。");return sql;}}
   }
   public static async Task SaveEditorVersion()
   {

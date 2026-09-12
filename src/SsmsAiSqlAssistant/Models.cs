@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data.SqlClient;
@@ -77,8 +77,10 @@ namespace Alyvo.SsmsAiSqlAssistant
   [JsonProperty("sql",Required=Required.Always)]public string Sql{get;set;}
   [JsonProperty("explanation",Required=Required.Always)]public string Explanation{get;set;}
  }
+ public sealed class SuggestionDto { public string Title{get;set;} public string Sql{get;set;} public string Explanation{get;set;} }
  public sealed class AnalysisDto
  {
+  [JsonProperty("suggestions")]public SuggestionDto[] Suggestions{get;set;}=new SuggestionDto[0];
   [JsonProperty("id",Required=Required.Always)]public string Id{get;set;}
   [JsonProperty("aiProvider",Required=Required.Always)]public string AiProvider{get;set;}
   [JsonProperty("summary",Required=Required.Always)]public string Summary{get;set;}
@@ -116,6 +118,7 @@ namespace Alyvo.SsmsAiSqlAssistant
  public sealed class RunMetrics{public ActualPlanRecord SavedPlan;public string ResultContract;public string Digest,Plan;public int Rows,Columns;public long Reads,CpuMs,ElapsedMs;public string[] Warnings;public string Shape;}
  public sealed class DryRunResult
  {
+
   public bool ExactQueryStoreBaseline;public string Snapshot,Status,Reason,CleanupWarning,QueryStore;public RunMetrics[] Original,Candidate;public bool Passed;
   public static long Median(IEnumerable<long> values)=>values.OrderBy(v=>v).ElementAt(values.Count()/2);
  }
@@ -124,6 +127,10 @@ namespace Alyvo.SsmsAiSqlAssistant
   public string Original,OriginalHash,ConnectionFingerprint;public int Start,Length,Version;public ConnectionContext Connection;public object Payload;public AnalysisDto Response;public Preflight Preflight;public DryRunResult DryRun;public int CandidateIndex;public string Status="";public bool Busy,Preview,Applied;public string Error="";public CancellationTokenSource Cancellation;
   public bool MatchesSelection(int version,int start,int length,string text,string fingerprint)=>Version==version&&Start==start&&Length==length&&OriginalHash==ConnectionContext.Hash(text)&&ConnectionFingerprint==fingerprint;
   public CandidateDto Candidate=>Response?.Candidates.ElementAtOrDefault(CandidateIndex);
+  public bool NoFurtherSuggestions=>Response?.AiProvider=="openai"&&Response.Candidates?.Length==0&&(Response.Suggestions?.Length??0)==0&&string.IsNullOrEmpty(Error)&&Preflight?.Passed!=false&&DryRun?.Passed!=false;
   public bool CanApply=>Candidate!=null&&!Busy&&!Applied&&string.IsNullOrEmpty(Error)&&Preflight?.Passed==true&&DryRun?.Passed==true;
  }
 }
+
+
+

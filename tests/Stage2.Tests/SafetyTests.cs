@@ -50,3 +50,6 @@ public class SafetyTests
   using(var c=context.Connect("master")){await c.OpenAsync();using(var cmd=c.CreateCommand()){cmd.CommandText="SELECT COUNT(*) FROM sys.databases WHERE name=@n";cmd.Parameters.AddWithValue("@n",result.Snapshot);Assert.Equal(0,Convert.ToInt32(await cmd.ExecuteScalarAsync()));}}
  }
 }
+
+
+

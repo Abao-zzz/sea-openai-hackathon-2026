@@ -29,14 +29,17 @@ public static class Contract
 public sealed class ApiError(int status,string code,string message) : Exception(message) { public int Status { get; }=status; public string Code { get; }=code; }
 public sealed record ErrorResponse(string Code,string Message,string RequestId);
 public sealed record ColumnMetadata([property:Required,MaxLength(128)] string Name,[property:Required,MaxLength(128)] string SqlType,bool Nullable);
-public sealed record ObjectMetadata([property:Required,MaxLength(260)] string Name,[property:Required,MaxLength(200)] ColumnMetadata[] Columns);
+public sealed record IndexKeyMetadata([property:Required,MaxLength(128)] string Name,[property:Range(0,128)] int Ordinal,bool Descending);
+public sealed record IndexMetadata([property:Required,MaxLength(128)] string Name,[property:Required,MaxLength(60)] string Type,bool Unique,bool PrimaryKey,bool Disabled,[property:MaxLength(8000)] string? Filter,[property:Required,MaxLength(200)] IndexKeyMetadata[] KeyColumns,[property:Required,MaxLength(200)] string[] IncludedColumns);
+public sealed record ObjectMetadata([property:Required,MaxLength(260)] string Name,[property:Required,MaxLength(200)] ColumnMetadata[] Columns,[property:MaxLength(64)] IndexMetadata[]? Indexes=null);
 public sealed record PlanSummary([property:Range(0,double.MaxValue)] double EstimatedCost,[property:Range(0,double.MaxValue)] double EstimatedRows,[property:Range(0,10000)] int ScanCount);
 public sealed record AnalyzeRequest([property:Required,MaxLength(64000)] string SelectedSql,[property:Required,MaxLength(64)] ObjectMetadata[] Metadata,[property:Required] PlanSummary EstimatedPlan,[property:Required] string ServerFingerprint,[property:Required] string DatabaseFingerprint);
 public sealed record ChatRequest([property:Required] AnalyzeRequest Context,[property:Required] string Topic);
 public sealed record Candidate([property:Required,MaxLength(64000)] string Sql,[property:Required,MaxLength(8000)] string Explanation);
-public sealed record AiAnswer([property:Required,MaxLength(8000)] string Summary,[property:Required,MaxLength(100)] string[] Issues,[property:Required,MaxLength(10)] Candidate[] Candidates,[property:Required,MaxLength(100)] string[] Warnings);
+public sealed record SqlSuggestion([property:Required,MaxLength(200)] string Title,[property:Required,MaxLength(16000)] string Sql,[property:Required,MaxLength(8000)] string Explanation);
+public sealed record AiAnswer([property:Required,MaxLength(8000)] string Summary,[property:Required,MaxLength(100)] string[] Issues,[property:Required,MaxLength(10)] Candidate[] Candidates,[property:Required,MaxLength(100)] string[] Warnings,[property:MaxLength(10)] SqlSuggestion[]? Suggestions=null);
 public sealed record Usage(long InputTokens,long CachedInputTokens,long CacheWriteTokens,long OutputTokens,string Model,decimal? EstimatedUsd,string EstimateKind);
-public sealed record AnalysisResponse(string Id,string AiProvider,string Summary,string[] Issues,Candidate[] Candidates,string[] Warnings,Usage Usage);
+public sealed record AnalysisResponse(string Id,string AiProvider,string Summary,string[] Issues,Candidate[] Candidates,string[] Warnings,Usage Usage,SqlSuggestion[]? Suggestions=null);
 public sealed record ValidateRequest([property:Required] Candidate Candidate);
 public sealed record ValidationResponse(bool Valid,bool CanApply,string VerificationMode,string[] Errors);
 public sealed record QueryResponse(string Sql,int TimeoutSeconds,string ExecutionLocation);
@@ -66,3 +69,5 @@ public sealed record ScheduleRun([property:Required] string JobId);
 public sealed record HealthResponse(string Status,string AiProvider,bool ApiKeyConfigured,string ApiKeySource,string Model,string ResponsesEndpoint,string HistoryStorage,string ApiVersion,string ServiceMode,string Authentication,int RequestRateLimitPerMinute,string TenantIsolation,string Language);
 public sealed record PrefilterResponse(bool Eligible,bool CanApply,string[] Reasons,string VerificationMode);
 public sealed record AuditVerificationResponse(bool Valid,string Algorithm,bool ExternallyImmutable);
+
+

@@ -21,3 +21,4 @@ public static class Pages
         return html.Append("</tbody></table></div></section></main></html>").ToString();
     }
 }
+

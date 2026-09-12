@@ -27,8 +27,9 @@ public class Stage5IntegrationTests
  [Fact] public async Task ExactQueryStoreUsesOneOriginalAndThreeCandidates()
  {
   var context=new ConnectionContext{Server="localhost",Database="AlyvoStage5Demo1",TrustServerCertificate=true};var worker=new DbWorker();
-  var a="SELECT COUNT_BIG(*) AS baseline_stage5 FROM dbo.Orders WHERE DATEDIFF(day,CONVERT(date,'2025-01-03'),OrderDate)=0;";
-  var b="SELECT COUNT_BIG(*) AS baseline_stage5 FROM dbo.Orders WHERE OrderDate>='20250103' AND OrderDate<'20250104';";
+  var alias="baseline_stage5_"+Guid.NewGuid().ToString("N");
+  var a="SELECT COUNT_BIG(*) AS "+alias+" FROM dbo.Orders WHERE DATEDIFF(day,CONVERT(date,'2025-01-03'),OrderDate)=0;";
+  var b="SELECT COUNT_BIG(*) AS "+alias+" FROM dbo.Orders WHERE OrderDate>='20250103' AND OrderDate<'20250104';";
   using(var c=context.Connect()){await c.OpenAsync();using(var cmd=c.CreateCommand()){cmd.CommandText=a;await cmd.ExecuteScalarAsync();cmd.CommandText="EXEC sys.sp_query_store_flush_db;";await cmd.ExecuteNonQueryAsync();}}
   var preflight=await worker.Preflight(context,a,b,CancellationToken.None);Assert.True(preflight.Passed);var run=await worker.DryRun(context,a,b,preflight,CancellationToken.None);Assert.True(run.Passed,run.Reason);Assert.True(run.ExactQueryStoreBaseline,run.QueryStore);Assert.Single(run.Original);Assert.Equal(3,run.Candidate.Length);
  }

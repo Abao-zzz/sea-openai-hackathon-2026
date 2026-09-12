@@ -34,7 +34,7 @@ namespace Alyvo.SsmsAiSqlAssistant
    var metadata=new List<object>();using(var c=context.Connect()){await Open(c,token);foreach(var name in parsed.Objects.Distinct(StringComparer.OrdinalIgnoreCase))
    {
     await CheckDependencies(c,name,token);
-    using(var cmd=new SqlCommand("SELECT c.name,t.name,c.is_nullable FROM sys.columns c JOIN sys.types t ON t.user_type_id=c.user_type_id WHERE c.object_id=OBJECT_ID(@name) ORDER BY c.column_id;",c)){cmd.Parameters.AddWithValue("@name",name);var columns=new List<object>();using(var r=await cmd.ExecuteReaderAsync(token))while(await r.ReadAsync(token))columns.Add(new{name=r.GetString(0),sqlType=r.GetString(1),nullable=r.GetBoolean(2)});if(columns.Count==0)throw new InvalidOperationException("引用物件 metadata 不完整，已停止分析。");metadata.Add(new{name,columns=columns.ToArray()});}
+    metadata.Add(await TableSchema.Read(c,name,token));
    }}var plan=await Estimated(context,sql,token);
    return new{selectedSql=sql,metadata=metadata.ToArray(),estimatedPlan=new{estimatedCost=plan.Cost,estimatedRows=plan.Rows,scanCount=plan.Scans},serverFingerprint=ConnectionContext.Hash(context.Server.ToUpperInvariant()),databaseFingerprint=context.Fingerprint};
   }
@@ -173,13 +173,17 @@ WHERE CONVERT(varbinary(max),t.query_sql_text)=CONVERT(varbinary(max),@sql) AND 
   }
   private static async Task<RunMetrics> Measure(ConnectionContext context,string snapshot,int sourceId,string sql,DryRunBudget limits,CancellationToken token)
   {
+   using(var c=context.Connect(snapshot)){await Open(c,token);await AssertSnapshot(c,sourceId,token);return await MeasureOnConnection(c,null,sql,limits,token);}
+  }
+  internal static async Task<RunMetrics> MeasureOnConnection(SqlConnection c,SqlTransaction transaction,string sql,DryRunBudget limits,CancellationToken token)
+  {
+   using(var reset=new SqlCommand("SET STATISTICS XML OFF; SET STATISTICS IO OFF; SET STATISTICS TIME OFF;",c,transaction))await reset.ExecuteNonQueryAsync(token);
    var statements=SqlSafety.ReadonlyStatements(sql);var result=new RunMetrics();var messages=new StringBuilder();var fingerprints=new List<string>();var plans=new List<XElement>();var contracts=new List<string>();var compareInfos=new List<CompareInfo[]>();var compareOptions=new List<CompareOptions[]>();
-   using(var c=context.Connect(snapshot))
    {
-    await Open(c,token);await AssertSnapshot(c,sourceId,token);
+
     foreach(var statement in statements)
     {
-     using(var metadata=new SqlCommand("SELECT collation_name,CONVERT(int,COLLATIONPROPERTY(collation_name,'LCID')),CONVERT(int,COLLATIONPROPERTY(collation_name,'ComparisonStyle')) FROM sys.dm_exec_describe_first_result_set(@sql,NULL,0) WHERE is_hidden=0 ORDER BY column_ordinal;",c){CommandTimeout=10})
+     using(var metadata=new SqlCommand("SELECT collation_name,CONVERT(int,COLLATIONPROPERTY(collation_name,'LCID')),CONVERT(int,COLLATIONPROPERTY(collation_name,'ComparisonStyle')) FROM sys.dm_exec_describe_first_result_set(@sql,NULL,0) WHERE is_hidden=0 ORDER BY column_ordinal;",c,transaction){CommandTimeout=10})
      {
       metadata.Parameters.Add("@sql",SqlDbType.NVarChar,-1).Value=statement;var infos=new List<CompareInfo>();var options=new List<CompareOptions>();
       using(var reader=await metadata.ExecuteReaderAsync(token))while(await reader.ReadAsync(token))
@@ -194,9 +198,9 @@ WHERE CONVERT(varbinary(max),t.query_sql_text)=CONVERT(varbinary(max),@sql) AND 
       compareInfos.Add(infos.ToArray());compareOptions.Add(options.ToArray());
      }
     }
-    await Execute(c,"SET LANGUAGE us_english; SET NOCOUNT ON; SET STATISTICS IO ON; SET STATISTICS TIME ON; SET STATISTICS XML ON;",token);
+    using(var settings=new SqlCommand("SET LANGUAGE us_english; SET NOCOUNT ON; SET STATISTICS IO ON; SET STATISTICS TIME ON; SET STATISTICS XML ON;",c,transaction))await settings.ExecuteNonQueryAsync(token);
     c.InfoMessage+=(s,e)=>messages.AppendLine(e.Message);
-    using(var cmd=new SqlCommand(sql,c){CommandTimeout=limits.QuerySeconds})using(token.Register(()=>cmd.Cancel()))using(var r=await cmd.ExecuteReaderAsync(token))
+    using(var cmd=new SqlCommand(sql,c,transaction){CommandTimeout=limits.QuerySeconds})using(token.Register(()=>cmd.Cancel()))using(var r=await cmd.ExecuteReaderAsync(token))
     {
      int sets=0;do
      {

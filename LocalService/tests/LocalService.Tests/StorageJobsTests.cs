@@ -31,3 +31,6 @@ public sealed class SecurityTests
     [Fact]public void Https_and_optin_required(){var c=Context();Assert.Throws<ApiError>(()=>new SecurityGate(new(),TimeProvider.System).Check(c));c.Request.Scheme="http";Assert.Throws<ApiError>(()=>new SecurityGate(Options(),TimeProvider.System).Check(c));}
     [Fact]public void Per_device_limit_and_window_reset(){var clock=new TestClock();var gate=new SecurityGate(Options(),clock);var c=Context();for(int i=0;i<300;i++)gate.Check(c);Assert.Equal(429,Assert.Throws<ApiError>(()=>gate.Check(c)).Status);c.Request.Headers["X-Device-Id"]="worker2";gate.Check(c);clock.Now=clock.Now.AddMinutes(1);c.Request.Headers["X-Device-Id"]="worker1";gate.Check(c);}
 }
+
+
+

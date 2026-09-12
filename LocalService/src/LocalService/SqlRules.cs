@@ -4,6 +4,14 @@ namespace LocalService;
 public sealed record SqlInspection(bool ReadOnly,string[] Errors,string[] Objects,string[] Issues);
 public static class SqlRules
 {
+    public static bool ValidSuggestion(string sql)
+    {
+        if(string.IsNullOrWhiteSpace(sql))return false;
+        var script=new TSql170Parser(true).Parse(new StringReader(sql),out var errors) as TSqlScript;
+        if(errors.Count>0||script is null||script.Batches.Count!=1)return false;
+        var statements=script.Batches.SelectMany(b=>b.Statements).ToArray();
+        return statements.Length==1&&(statements[0] is CreateIndexStatement||statements[0] is UpdateStatisticsStatement);
+    }
     public static SqlInspection Inspect(string sql)
     {
         var parser=new TSql170Parser(true);var fragment=parser.Parse(new StringReader(sql),out var errors);
@@ -95,3 +103,5 @@ public static class SqlRules
         WHERE p.object_id=@objectId ORDER BY p.parameter_id;
         """;
 }
+
+

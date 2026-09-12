@@ -18,3 +18,4 @@ namespace Alyvo.SsmsAiSqlAssistant
   }
  }
 }
+
