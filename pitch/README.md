@@ -49,7 +49,7 @@ pitch/public/video/demo.mp4
 
 替換後重新整理頁面；若仍顯示舊內容，或是首次加入檔案，重新啟動 `npm run dev`。使用瀏覽器可播放的 MP4 編碼。
 
-影片檔已被 Git 忽略，**clone repository 不會取得影片**，換電腦展示前需另行複製。PDF 不包含可播放影片，Demo 頁會呈現靜態預留畫面。
+`public/video/demo.mp4` 已納入 Git，clone 或 pull repository 即可取得目前的 Demo 影片；其他影片檔仍預設忽略。PDF 不包含可播放影片，Demo 頁會呈現靜態預留畫面。
 
 ## 修改內容與講稿
 
