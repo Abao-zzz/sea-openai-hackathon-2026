@@ -1,0 +1,24 @@
+<Project><Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+ <PropertyGroup>
+  <TargetFramework>net472</TargetFramework><UseWPF>true</UseWPF><PlatformTarget>x64</PlatformTarget><LangVersion>latest</LangVersion><Nullable>disable</Nullable>
+  <AssemblyName>Alyvo.SsmsAiSqlAssistant</AssemblyName><RootNamespace>Alyvo.SsmsAiSqlAssistant</RootNamespace><GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+  <GeneratePkgDefFile>true</GeneratePkgDefFile><UseCodebase>true</UseCodebase><IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer><IncludeDebugSymbolsInVSIXContainer>true</IncludeDebugSymbolsInVSIXContainer>
+  <CreateVsixContainer Condition="'$(Stage5ReleaseApproved)' == 'true' Or '$(Stage5AcceptanceBuild)' == 'true'">true</CreateVsixContainer><CreateVsixContainer Condition="'$(Stage5ReleaseApproved)' != 'true' And '$(Stage5AcceptanceBuild)' != 'true'">false</CreateVsixContainer><DeployExtension>false</DeployExtension><CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  <NoWarn>$(NoWarn);VSSDK005;VSSDK006;VSSDK007;VSTHRD010;VSTHRD100;VSTHRD103;VSTHRD200;VSTHRD110;VSTHRD002;VSTHRD102</NoWarn>
+ </PropertyGroup>
+ <ItemGroup>
+  <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" ExcludeAssets="runtime" />
+  <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.14.2120" PrivateAssets="all" />
+  <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" PrivateAssets="all" />
+  <PackageReference Include="Microsoft.SqlServer.TransactSql.ScriptDom" Version="180.102.0" />
+  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" /><PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.13" />
+  <Reference Include="SqlWorkbench.Interfaces"><HintPath>C:/Program Files/Microsoft SQL Server Management Studio 22/Release/Common7/IDE/SqlWorkbench.Interfaces.dll</HintPath><Private>false</Private></Reference><Reference Include="Microsoft.SqlServer.ConnectionInfo"><HintPath>C:/Program Files/Microsoft SQL Server Management Studio 22/Release/Common7/IDE/Microsoft.SqlServer.ConnectionInfo.dll</HintPath><Private>false</Private></Reference><Reference Include="Microsoft.SqlServer.Management.Sdk.Sfc"><HintPath>C:/Program Files/Microsoft SQL Server Management Studio 22/Release/Common7/IDE/Microsoft.SqlServer.Management.Sdk.Sfc.dll</HintPath><Private>false</Private></Reference><Reference Include="System.ValueTuple"><HintPath>$(NuGetPackageRoot)system.valuetuple/4.5.0/lib/net47/System.ValueTuple.dll</HintPath><Private>true</Private></Reference><Reference Include="System.Windows.Forms"/><Reference Include="System.Design"/><Reference Include="System.Net.Http"/><Reference Include="System.Data"/><Reference Include="System.ComponentModel.Composition"/>
+ </ItemGroup>
+ <ItemGroup>
+  <Content Include="$(NuGetPackageRoot)sqlitepclraw.core/2.1.13/lib/netstandard2.0/SQLitePCLRaw.core.dll" Link="SQLitePCLRaw.core.dll" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true"/><Content Include="$(NuGetPackageRoot)sqlitepclraw.bundle_e_sqlite3/2.1.13/lib/net461/SQLitePCLRaw.batteries_v2.dll" Link="SQLitePCLRaw.batteries_v2.dll" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true"/>
+  <Content Include="$(NuGetPackageRoot)system.valuetuple/4.5.0/lib/net47/System.ValueTuple.dll" Link="System.ValueTuple.dll" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true"/><Content Include="$(NuGetPackageRoot)sqlitepclraw.lib.e_sqlite3/2.1.13/runtimes/win-x64/native/e_sqlite3.dll" Link="e_sqlite3.dll" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true"/>
+  <None Include="source.extension.vsixmanifest"><SubType>Designer</SubType></None>
+  <VSCTCompile Include="Commands.vsct"><ResourceName>Menus.ctmenu</ResourceName></VSCTCompile>
+ </ItemGroup>
+<Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" /><Import Project="$(VSToolsPath)/VSSDK/Microsoft.VsSDK.targets" /></Project>
