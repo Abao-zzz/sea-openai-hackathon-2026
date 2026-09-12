@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable">
+ <Extern href="stdidcmd.h"/><Extern href="vsshlids.h"/>
+ <Commands package="PackageGuid">
+  <Groups><Group guid="CommandsGuid" id="ToolsGroup" priority="0x0100"><Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/></Group><Group guid="CommandsGuid" id="ToolbarGroup" priority="0x0100"><Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_STANDARD"/></Group></Groups>
+  <Buttons>
+   <Button guid="CommandsGuid" id="Toggle" priority="0x0100" type="Button"><Parent guid="CommandsGuid" id="ToolsGroup"/><CommandFlag>TextChanges</CommandFlag><Strings><ButtonText>AI 優化浮動模式</ButtonText></Strings></Button>
+   <Button guid="CommandsGuid" id="Details" priority="0x0200" type="Button"><Parent guid="CommandsGuid" id="ToolsGroup"/><Strings><ButtonText>開啟 AI 詳細解析</ButtonText></Strings></Button>
+   <Button guid="CommandsGuid" id="Version" priority="0x0300" type="Button"><Parent guid="CommandsGuid" id="ToolsGroup"/><Strings><ButtonText>建立目前 SP 版本</ButtonText></Strings></Button>
+   <Button guid="CommandsGuid" id="ToolbarToggle" priority="0x0100" type="Button"><Parent guid="CommandsGuid" id="ToolbarGroup"/><CommandFlag>TextChanges</CommandFlag><CommandFlag>IconAndText</CommandFlag><Strings><ButtonText>✦ AI 優化</ButtonText></Strings></Button>
+   <Button guid="CommandsGuid" id="Management" priority="0x0400" type="Button"><Parent guid="CommandsGuid" id="ToolsGroup"/><Strings><ButtonText>AI 管理與設定</ButtonText></Strings></Button>
+  </Buttons>
+ </Commands>
+ <Symbols><GuidSymbol name="PackageGuid" value="{7b7ca13c-4dd4-4eb9-a26f-021b0b5650bd}"/><GuidSymbol name="CommandsGuid" value="{716bb7ef-65f4-4f5e-a23b-b6cb09ff8c6a}"><IDSymbol name="ToolsGroup" value="0x1000"/><IDSymbol name="ToolbarGroup" value="0x1001"/><IDSymbol name="Toggle" value="0x0100"/><IDSymbol name="Details" value="0x0101"/><IDSymbol name="Version" value="0x0102"/><IDSymbol name="ToolbarToggle" value="0x0103"/><IDSymbol name="Management" value="0x0104"/></GuidSymbol></Symbols>
+</CommandTable>
