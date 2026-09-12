@@ -7,6 +7,13 @@ using Alyvo.SsmsAiSqlAssistant;
 using Xunit;
 public class IndexInlineTests
 {
+ [Fact] public void SpSuggestionsAreSeparateFromRewriteValidation()
+ {
+  var review=new SpReview{Analysis=new AnalysisDto{Candidates=Array.Empty<CandidateDto>(),Suggestions=new[]{new SuggestionDto{Sql="CREATE INDEX ix ON dbo.t(id)"}}}};
+  Assert.True(review.SuggestionsOnly);Assert.False(review.PreflightPassed);Assert.False(review.Passed);
+  review.Error="connection failed";Assert.False(review.SuggestionsOnly);
+  review.Error="";review.Analysis.Candidates=new[]{new CandidateDto{Sql="SELECT id FROM dbo.t"}};Assert.False(review.SuggestionsOnly);
+ }
  [Fact] public void NoSuggestionSummaryDoesNotMaskErrorsOrLocalFallback()
  {
   var state=new AnalysisState{Response=new AnalysisDto{AiProvider="openai",Candidates=Array.Empty<CandidateDto>()}};

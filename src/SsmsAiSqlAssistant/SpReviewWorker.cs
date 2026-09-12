@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
@@ -15,6 +15,7 @@ namespace Alyvo.SsmsAiSqlAssistant
  {
   public string CandidateSql,OriginalHash,Error="",Status="準備中",SentSelect,Explanation="";
   public AnalysisDto Analysis;public WorkloadCase[] Cases=new WorkloadCase[0];public readonly List<Preflight> Preflights=new List<Preflight>();public readonly List<DryRunResult> Runs=new List<DryRunResult>();public int? Version;
+  public bool SuggestionsOnly=>Analysis?.Candidates?.Length==0&&(Analysis.Suggestions?.Length??0)>0&&string.IsNullOrEmpty(Error);
   public bool PreflightPassed=>Cases.Length>0 && Preflights.Count==Cases.Length && Preflights.All(p=>p.Passed)&&string.IsNullOrEmpty(Error);
   public bool Passed=>PreflightPassed && Runs.Count==Cases.Length && Runs.All(r=>r.Passed);
   public long Tokens=>Analysis==null?0:(Analysis.Usage["inputTokens"]?.Value<long>()??0)+(Analysis.Usage["outputTokens"]?.Value<long>()??0);
@@ -68,7 +69,7 @@ namespace Alyvo.SsmsAiSqlAssistant
     progress?.Report("第 2/4：未送 OpenAI；讀取 schema 與 estimated plan");var concrete=row.Body.Bind(row.Body.SelectSql,review.Cases[0]);var payload=JObject.FromObject(await db.BuildPayload(concrete,context,token));payload["selectedSql"]=row.Body.SelectSql;review.SentSelect=row.Body.SelectSql;
     progress?.Report("第 3/4：OpenAI 候選準備；不執行 SP");await api.Check(token);
     review.Analysis=LocalApi.Decode(await api.Send("/agent/stored-procedures/prepare",new{context=payload,trigger=jobId==null?"single-user":"batch-user",jobId,leaseToken=lease,objectId=(int?)row.Module.Id},token));
-    if(review.Analysis.Candidates.Length==0)throw new InvalidOperationException("AI 沒有提供可驗證候選："+review.Analysis.Summary);
+    if(review.Analysis.Candidates.Length==0){review.Status=review.SuggestionsOnly?"有索引／統計資訊優化建議":"目前沒有 SQL 改寫候選";review.Explanation=review.Analysis.Summary;AnalysisHistory.RecordSp(context,row,"analysis");return review;}
     var candidate=review.Analysis.Candidates[0];review.Explanation=candidate.Explanation;review.CandidateSql=row.Body.Candidate(candidate.Sql,context.Database);
     var prefilter=await api.Send("/agent/candidate-prefilter",new{candidate=new{sql=candidate.Sql,explanation=candidate.Explanation}},token);if(prefilter["eligible"]?.Value<bool>()!=true)throw new InvalidOperationException("候選 prefilter 拒絕。"+prefilter["reasons"]);
     for(int i=0;i<review.Cases.Length;i++){token.ThrowIfCancellationRequested();progress?.Report($"第 4/4：安全預檢 workload {i+1}/{review.Cases.Length}");var item=review.Cases[i];review.Preflights.Add(await db.Preflight(context,row.Body.Bind(row.Body.SelectSql,item),row.Body.Bind(candidate.Sql,item),token));}
