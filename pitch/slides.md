@@ -240,42 +240,29 @@ eyebrow: 09 · CODEX · 應用深度
 eyebrow: "10 · TODAY & NEXT · 收尾"
 ---
 
-# Agent 負責驗證，人決定寫回
-
-<div class="grid-2">
-<div class="card rv" style="--d:200">
-<div class="card-title">它決定的</div>
-<ul class="list done">
-<li class="rv" style="--d:450">選哪些 SP、跳過哪些、為什麼</li>
-<li class="rv" style="--d:600">用哪幾組參數證據、改成什麼</li>
-<li class="rv" style="--d:750">六關過不過、Snapshot 過不過、差多少</li>
-<li class="rv" style="--d:900">批次 Top N：逐支自己跑，有預算、有停止條件，通過的排進待審</li>
-</ul>
+<div class="final-spread">
+<div class="final-statement rv" style="--d:150"><h1>沒人敢碰的 SQL，<br>從此<mark>有人接手。</mark></h1><div class="final-values">發現 · 修改 · 驗證 · 可回溯</div><div class="final-human">Agent 推進流程，人確認套用。</div></div>
+<div class="final-roadmap">
+<section class="rv" style="--d:400"><h2>今天</h2><div class="final-roadmap-label">已實作的原型</div><p>掃描與呼叫追蹤<br>AI 改寫與驗證<br>版本紀錄與還原</p></section>
+<section class="rv" style="--d:650"><h2>下一步</h2><p>Codex MCP 整合<br>批次與排程驗收<br>更多 SQL Server 環境</p></section>
 </div>
-<div class="card rv" style="--d:1200">
-<div class="card-title muted">人決定的</div>
-<ul class="list todo muted">
-<li class="rv" style="--d:1450">要不要開下一道門：掃描、預檢或批次、套用</li>
-<li class="rv" style="--d:1600">通過的版本要不要進、進了要不要退</li>
-<li class="rv" style="--d:1750">每次寫回都需要確認，批次通過也只排進待審</li>
-</ul>
-</div>
-</div>
-
-<div class="kicker mt-4 rv" style="--d:2100">今天真的跑起來的</div>
-<div class="chips mt-2">
-<Chip class="rv" style="--d:2250">SP 呼叫追蹤</Chip>
-<Chip class="rv" style="--d:2400">SP 掃描</Chip>
-<Chip class="rv" style="--d:2550">SP 優化與批次驗證</Chip>
-<Chip class="rv" style="--d:2700">SP 版本控制 · 進版 / 退版 / 稽核</Chip>
-</div>
-<div class="muted tiny mt-2 rv" style="--d:3000">下一步：獨立 worker、更多 SQL Server 版本實測、Codex MCP 入口</div>
-
-<div class="close final">
-<div class="rule rv grow" style="--d:3400"></div>
-<span class="rv" style="--d:3600">沒人敢碰的 SQL，從此有人接手。</span>
 </div>
 
 <!--
-Agent 決定選誰、跳過誰、用什麼參數與候選是否通過。批次驗證有預算與停止條件，通過項目進待審，不自動套用。人決定是否啟動下一階段，以及是否進版或退版。目前 SSMS 關閉後工作不繼續，獨立 worker 是下一步。沒人敢碰的 SQL，從此有人接手。謝謝。
+收尾回到核心價值：Agent 串起發現問題、提出修改、執行驗證與保留可回溯紀錄；驗證由規則程式執行，套用仍由人確認。今天完成的是開發原型：SP 掃描與呼叫追蹤、AI 改寫與 Snapshot 驗證、版本及套用歷史。依 repository 的 README 與 WORK-IN-PROGRESS，目前為 5.0.0.4 驗收版，不能等同完成正式發佈；批次 AI 真實證據、完整 SSMS UI、治理排程、Standard 與全新機安裝等驗收仍有待完成。今天時間有限，後续希望完成 Codex MCP 與 SQL Performance Agent 整合，補齊批次／排程端對端驗收，以及更多 SQL Server 環境驗證。已有 LocalService 實作，不再把整個獨立服務寫成尚未開發。最後：沒人敢碰的 SQL，從此有人接手。謝謝。
+-->
+
+---
+centered: true
+pagenum: false
+---
+
+<div class="qa-page">
+<div class="qa-title">Q<span>&</span>A</div>
+<div class="qa-rule"></div>
+<div class="qa-team">肥宅快樂水</div>
+</div>
+
+<!--
+進入問答環節，停留在此頁回答評審問題。
 -->

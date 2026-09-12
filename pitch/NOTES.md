@@ -54,4 +54,8 @@ https://learn.microsoft.com/en-us/sql/t-sql/statements/set-statistics-io-transac
 
 ## 第 11 頁
 
-Agent 決定選誰、跳過誰、用什麼參數與候選是否通過。批次驗證有預算與停止條件，通過項目進待審，不自動套用。人決定是否啟動下一階段，以及是否進版或退版。目前 SSMS 關閉後工作不繼續，獨立 worker 是下一步。沒人敢碰的 SQL，從此有人接手。謝謝。
+收尾回到核心價值：Agent 串起發現問題、提出修改、執行驗證與保留可回溯紀錄；驗證由規則程式執行，套用仍由人確認。今天完成的是開發原型：SP 掃描與呼叫追蹤、AI 改寫與 Snapshot 驗證、版本及套用歷史。依 repository 的 README 與 WORK-IN-PROGRESS，目前為 5.0.0.4 驗收版，不能等同完成正式發佈；批次 AI 真實證據、完整 SSMS UI、治理排程、Standard 與全新機安裝等驗收仍有待完成。今天時間有限，後续希望完成 Codex MCP 與 SQL Performance Agent 整合，補齊批次／排程端對端驗收，以及更多 SQL Server 環境驗證。已有 LocalService 實作，不再把整個獨立服務寫成尚未開發。最後：沒人敢碰的 SQL，從此有人接手。謝謝。
+
+## 第 12 頁
+
+進入問答環節，停留在此頁回答評審問題。

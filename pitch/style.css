@@ -824,3 +824,33 @@
 .pitch .codex-with-history .codex-depth-row { padding: 1rem 0; }
 .pitch .codex-with-history .codex-depth-title mark { padding: .07em .25em; }
 .pitch .codex-with-history .codex-depth-close { color: var(--muted); margin-top: 1.1rem; }
+
+.pitch .closing-principles { display: flex; align-items: center; justify-content: space-between; margin: 1.1rem 0 2rem; font: 300 1.75rem var(--font-serif); }
+.pitch .closing-principles span { background: var(--lime); padding: .1em .4em; border-radius: .3rem; }
+.pitch .closing-principles i { font: 400 1rem var(--font-sans); color: var(--muted); }
+.pitch .closing-columns { display: grid; grid-template-columns: 1fr 1.15fr; gap: 2.5rem; }
+.pitch .closing-columns h2 { font: 300 1.55rem var(--font-serif); margin: 0 0 1.2rem; }
+.pitch .closing-next { border-left: 1px solid var(--line); padding-left: 2rem; }
+.pitch .closing-item { font-size: .95rem; margin-bottom: .75rem; }
+.pitch .closing-next .closing-item { color: var(--muted); }
+.pitch .closing-signoff { margin-top: 1.8rem; font: 300 1.35rem var(--font-serif); }
+.pitch .closing-signoff mark { background: #E1E1FE; color: var(--ink); border-radius: .3rem; padding: .05em .2em; }
+
+/* Closing editorial spread: one statement, a quiet roadmap. */
+.pitch .final-spread { flex: 1; display: grid; grid-template-columns: 1.85fr 1fr; gap: 2.8rem; align-items: center; padding-bottom: .8rem; }
+.pitch .final-statement h1 { font-size: 2.65rem; font-weight: 300; line-height: 1.55; letter-spacing: -.04em; margin: 0 0 2rem; white-space: nowrap; }
+.pitch .final-statement h1 mark { color: var(--ink); background: var(--lime); padding: 0 .12em; border-radius: .3rem; }
+.pitch .final-values { font-size: 1.15rem; letter-spacing: .05em; }
+.pitch .final-human { font-size: .8rem; color: var(--muted); margin-top: .7rem; }
+.pitch .final-roadmap { padding-left: 1.6rem; border-left: 1px solid var(--line); }
+.pitch .final-roadmap section + section { margin-top: 2rem; }
+.pitch .final-roadmap h2 { font: 300 1.6rem var(--font-serif); margin: 0 0 .65rem; }
+.pitch .final-roadmap-label { font-size: .7rem; color: var(--muted); margin-bottom: .4rem; }
+.pitch .final-roadmap p { font-size: .95rem; line-height: 1.9; }
+.pitch .final-roadmap section + section p { color: var(--muted); }
+
+.pitch .qa-page { text-align: center; }
+.pitch .qa-title { font: 300 8rem/1.2 var(--font-serif); letter-spacing: -.05em; }
+.pitch .qa-title span { background: var(--lime); border-radius: .45rem; padding: 0 .08em; margin: 0 .08em; }
+.pitch .qa-rule { width: 3rem; height: 2px; background: var(--ink); margin: 2rem auto 1rem; }
+.pitch .qa-team { font-size: .9rem; color: var(--muted); }
