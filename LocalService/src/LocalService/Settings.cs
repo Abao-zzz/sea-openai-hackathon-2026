@@ -64,3 +64,5 @@ public sealed class SecurityGate(Settings settings,TimeProvider time)
     }
     private static bool Equal(string a,string b)=>CryptographicOperations.FixedTimeEquals(SHA256.HashData(Encoding.UTF8.GetBytes(a)),SHA256.HashData(Encoding.UTF8.GetBytes(b)));
 }
+
+

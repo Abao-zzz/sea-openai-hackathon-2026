@@ -1,4 +1,4 @@
-USE master;
+﻿USE master;
 GO
 IF DB_ID(N'AlyvoStage5Demo1') IS NOT NULL THROW 51000, 'Demo database already exists; no changes made.', 1;
 CREATE DATABASE [AlyvoStage5Demo1] COLLATE Chinese_Taiwan_Stroke_CI_AS;

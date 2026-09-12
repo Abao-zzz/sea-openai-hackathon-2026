@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -112,9 +112,11 @@ namespace Alyvo.SsmsAiSqlAssistant
   void Review()
   {
    var row=reviewRow;var r=row.Review;if(r==null)return;subtitle.Text=row.Module.FullName+"；來源查詢模式，不在來源資料庫執行候選。";page.Children.Add(Action("返回待審清單",()=>{reviewRow=null;subtitle.Text="依目前 DMV 與可快速取得的近期成本排序；選一支後才載入該 SP 的 plan 證據。";Render();}));
-   var color=r.Passed?"#047857":r.PreflightPassed?"#1D4ED8":"#B91C1C";var summary=Stack(Ui.Text(busy?row.Stage:r.Status,18,color),Ui.Text(r.Error,12,"#B91C1C"));var grid=new UniformGrid{Columns=2};foreach(var pair in new[]{new[]{"分析來源",r.Analysis?.AiProvider??"未送 OpenAI"},new[]{"候選",r.Analysis==null?"0 組":r.Analysis.Candidates.Length+" 組"},new[]{"安全預檢",r.PreflightPassed?"通過":"退回／未完成"},new[]{"資料庫動作","未自動套用"},new[]{"Snapshot Dry Run",r.Passed?"所有案例通過":r.PreflightPassed?"可執行":"不可執行"},new[]{"版本",r.Version.HasValue?"V"+r.Version:"尚未建立"}})grid.Children.Add(new Border{Padding=new Thickness(8),Background=Ui.Brush("#F8FAFC"),Child=Stack(Ui.Text(pair[0],11,"#6B7280"),Ui.Text(pair[1],13,color))});summary.Children.Add(grid);var callout=Ui.Card(summary);callout.BorderBrush=Ui.Brush(color);callout.BorderThickness=new Thickness(4,1,1,1);page.Children.Add(callout);
+   var applied=r.Version.HasValue&&versions.Load(context,row.Module).Versions.Single(v=>v.Number==r.Version.Value).State=="已套用";
+   var color=r.Passed?"#047857":r.PreflightPassed?"#1D4ED8":"#B91C1C";var summary=Stack(Ui.Text(busy?row.Stage:r.Status,18,color),Ui.Text(r.Error,12,"#B91C1C"));var grid=new UniformGrid{Columns=2};foreach(var pair in new[]{new[]{"分析來源",r.Analysis?.AiProvider??"未送 OpenAI"},new[]{"候選",r.Analysis==null?"0 組":r.Analysis.Candidates.Length+" 組"},new[]{"安全預檢",r.PreflightPassed?"通過":"退回／未完成"},new[]{"資料庫動作",applied?"已套用到資料庫":"尚未套用到資料庫"},new[]{"Snapshot Dry Run",r.Passed?"所有案例通過":r.PreflightPassed?"可執行":"不可執行"},new[]{"版本",r.Version.HasValue?"V"+r.Version:"尚未建立"}})grid.Children.Add(new Border{Padding=new Thickness(8),Background=Ui.Brush("#F8FAFC"),Child=Stack(Ui.Text(pair[0],11,"#6B7280"),Ui.Text(pair[1],13,color))});summary.Children.Add(grid);var callout=Ui.Card(summary);callout.BorderBrush=Ui.Brush(color);callout.BorderThickness=new Thickness(4,1,1,1);page.Children.Add(callout);
    if(busy){page.Children.Add(new ProgressBar{Height=3,IsIndeterminate=true});page.Children.Add(Action("取消",()=>single?.Cancel()));}
-   if(r.CandidateSql!=null)Card("候選 SP",Ui.Text("完整內容供審查與複製；不執行、不寫回資料庫。"),Ui.Code(r.CandidateSql,300),Action("複製 SQL",()=>Clipboard.SetText(r.CandidateSql)));
+   if(applied)Card("已套用到資料庫",Ui.Text(context.Server+" / "+context.Database+" / "+row.Module.FullName+" · V"+r.Version,14,"#047857"),Ui.Text("下方保留本次修改前後的比對。已開啟的 SQL 分頁不會自動更新；請按下方按鈕重新讀取資料庫目前定義。"),Action("開啟資料庫目前版本",()=>MapIntegration.OpenQuery(context,row.Module)));
+   if(r.CandidateSql!=null)Card("新版 / 舊版 SQL 比對",SqlComparison.View(row.Module.Definition,r.CandidateSql,applied));
    Card("來源查詢模式",Ui.Text("只分析分離的唯讀 SELECT；參數、SP 身分與其餘定義保留。完整候選必須通過所有 workload Snapshot 驗證後才能建立版本。"),Ui.Expand("本次實際送出的 SELECT",Ui.Code(r.SentSelect,220)));
    foreach(var i in Enumerable.Range(0,r.Cases.Length))
    {
@@ -122,6 +124,7 @@ namespace Alyvo.SsmsAiSqlAssistant
     if(i<r.Preflights.Count){var p=r.Preflights[i];var checks=Stack();foreach(var gate in p.Gates)checks.Children.Add(Ui.Text((gate.Passed?"通過：":"未過：")+gate.Name+" · "+gate.Reason,12,gate.Passed?"#4B5563":"#B91C1C"));Card("安全預檢",Ui.Text(p.Gates.Count(g=>g.Passed)+"/6 項通過",14,p.Passed?"#047857":"#B91C1C"),Ui.Text("這是編譯與欄位檢查，尚不代表資料結果一致。"),Ui.Expand("查看安全預檢項目",checks,true),Ui.Expand("原版 estimated plan",Ui.Code(p.Original?.Xml,160)),Ui.Expand("候選 estimated plan",Ui.Code(p.Candidate?.Xml,160)));}
     if(i<r.Runs.Count){var run=r.Runs[i];var values=Stack(Ui.Text(run.Reason,13,run.Passed?"#047857":"#B91C1C"),Ui.Text(run.CleanupWarning));if(run.Original?.Length==3&&run.Candidate?.Length==3){values.Children.Add(Ui.Text($"結果一致：{run.Original.Concat(run.Candidate).Select(x=>x.Digest).Distinct().Count()==1}\nMedian reads {DryRunResult.Median(run.Original.Select(x=>x.Reads))} → {DryRunResult.Median(run.Candidate.Select(x=>x.Reads))}\nCPU {DryRunResult.Median(run.Original.Select(x=>x.CpuMs))} → {DryRunResult.Median(run.Candidate.Select(x=>x.CpuMs))} ms"));values.Children.Add(Ui.Expand("原版 actual plan",Ui.Code(run.Original[0].Plan,200)));values.Children.Add(Ui.Expand("候選 actual plan",Ui.Code(run.Candidate[0].Plan,200)));}Card("SP Snapshot Dry Run",values);}
    }
+   foreach(var suggestion in r.Analysis?.Suggestions??new SuggestionDto[0])Card("索引與統計資訊建議",Ui.Suggestion(suggestion,context,r.Cases.Length>0?row.Body.Bind(row.Body.SelectSql,r.Cases[0]):null));
    Card("優化說明",Ui.Text(r.Analysis?.Summary),Ui.Text(r.Explanation),Ui.Text(string.Join("\n",r.Analysis?.Warnings??new string[0]),12,"#92400E"));
    if(r.PreflightPassed&&!r.Passed&&!busy)page.Children.Add(Async("SP Snapshot Dry Run",()=>DryRun(row),true));
    if(r.Passed&&!busy){if(!r.Version.HasValue)page.Children.Add(Async("接受並建立版本",()=>Accept(row),true));else{if(versions.Load(context,row.Module).Versions.Single(v=>v.Number==r.Version.Value).State!="已套用")page.Children.Add(Async("套用到資料庫",()=>Apply(row),true));page.Children.Add(Action("匯出",()=>MessageBox.Show(versions.Export(context,row.Module),"版本匯出")));}}
@@ -132,7 +135,7 @@ namespace Alyvo.SsmsAiSqlAssistant
   }
   async Task Apply(SpScanRow row)
   {
-   if(!row.Review.Passed||!row.Review.Version.HasValue)throw new InvalidOperationException("必須先通過驗證並建立版本。");var folder=versions.Prepare(context,row.Module,row.Review.Version.Value);if(MessageBox.Show("套用 "+row.Module.FullName+" 到 "+context.Server+" / "+context.Database+"？\n已建立 up/down migration："+folder,"確認套用 SP 版本",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;await versions.Apply(context,row.Module,row.Review.Version.Value,false,CancellationToken.None);AnalysisHistory.RecordSp(context,row,"apply","applied");row.Review.Status="V"+row.Review.Version+" 已套用";MapControl.NotifyVersionChanged();Render();
+   if(!row.Review.Passed||!row.Review.Version.HasValue)throw new InvalidOperationException("必須先通過驗證並建立版本。");var folder=versions.Prepare(context,row.Module,row.Review.Version.Value);if(MessageBox.Show("套用 "+row.Module.FullName+" 到 "+context.Server+" / "+context.Database+"？\n已建立 up/down migration："+folder,"確認套用 SP 版本",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;await versions.Apply(context,row.Module,row.Review.Version.Value,false,CancellationToken.None);AnalysisHistory.RecordSp(context,row,"apply","applied");row.Review.Status="V"+row.Review.Version+" 已套用到資料庫";MapControl.NotifyVersionChanged();Render();scroll.ScrollToTop();
   }
   async Task StartBatch(string id=null,string action=null){if(busy||batch.Busy)return;reviewRow=null;var task=batch.Run(scan,top,budget,id,action);Render();await task;Render();}
   void BudgetDialog()

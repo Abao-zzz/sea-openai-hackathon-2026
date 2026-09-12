@@ -82,3 +82,6 @@ public sealed class Jobs(Store store,TimeProvider time)
         return j with {Items=items,CancelRequested=exhausted,Status=exhausted?"budget-exhausted":j.Status};
     });
 }
+
+
+

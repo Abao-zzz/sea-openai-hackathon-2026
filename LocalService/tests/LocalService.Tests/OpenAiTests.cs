@@ -46,3 +46,5 @@ public sealed class OpenAiTests
     [Fact]public async Task Json_mode_input_explicitly_requests_json(){await using var m=await MockOpenAi.Start();await Client(m).Analyze(Fixtures.Analyze(),default);using var request=JsonDocument.Parse(m.Body);Assert.Contains("JSON",request.RootElement.GetProperty("input").GetString());}
     [Fact]public void Cached_pricing_and_legacy_upper_bound(){var s=new Settings{Model="priced-test",Prices=new(){["priced-test"]=[1,0.1m,2,4]}};var ai=new OpenAi(s,new HttpClient());using var d=JsonDocument.Parse("{\"usage\":{\"input_tokens\":100,\"output_tokens\":10}}");var u=ai.ParseUsage(d.RootElement);Assert.Equal("upper-bound",u.EstimateKind);Assert.Equal(0.00014m,u.EstimatedUsd);}
 }
+
+

@@ -46,12 +46,14 @@ namespace Alyvo.SsmsAiSqlAssistant
   static Border Card(UIElement child)=>new Border{Child=child,Background=Brushes.White,BorderBrush=Ui.Brush("#D1D5DB"),BorderThickness=new Thickness(1),CornerRadius=new CornerRadius(4),Padding=new Thickness(14),Margin=new Thickness(0,0,10,10)};
   static Button Button(string text,Action action)=>Ui.Button(text,()=>{try{action();}catch(Exception e){MessageBox.Show(e.Message,"SP 呼叫地圖");}});
   static Button AsyncButton(string text,Func<Task> action)=>Ui.AsyncButton(text,async()=>{try{await action();}catch(Exception e){MessageBox.Show(e.Message,"SP 呼叫地圖");}});
+  readonly Dictionary<int,string> baselineErrors=new Dictionary<int,string>();
+  void EnsureBaselines(){baselineErrors.Clear();foreach(var m in graph.Modules.Values.Where(x=>x.IsProcedure)){try{versions.EnsureBaseline(context,m);}catch(Exception e){baselineErrors[m.Id]=e.Message;}}}
   public async Task Load(ConnectionContext connection){context=connection;navigation.Clear();await Reload();}
-  public void LoadSnapshot(ConnectionContext connection,MapGraph snapshot,string filter=""){context=connection;graph=snapshot;navigation.Clear();search.Text=filter??"";status.Text="觀察時間 "+snapshot.ObservedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");RenderTree();RenderInspector();}
+  public void LoadSnapshot(ConnectionContext connection,MapGraph snapshot,string filter=""){context=connection;graph=snapshot;EnsureBaselines();navigation.Clear();search.Text=filter??"";status.Text="觀察時間 "+snapshot.ObservedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");RenderTree();RenderInspector();}
   async Task Reload()
   {
    if(context==null||busy)return;busy=true;cancellation?.Cancel();cancellation?.Dispose();cancellation=new CancellationTokenSource();status.Text="正在唯讀載入 catalog…";
-   try{var fresh=await new MapCollector().Load(context,cancellation.Token);if(disposed)return;graph=fresh;navigation.RemoveAll(id=>!graph.Modules.ContainsKey(id));selected=selected!=null&&graph.Modules.TryGetValue(selected.Id,out var m)?m:null;status.Text="觀察時間 "+graph.ObservedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");RenderTree();RenderInspector();}
+   try{var fresh=await new MapCollector().Load(context,cancellation.Token);if(disposed)return;graph=fresh;EnsureBaselines();navigation.RemoveAll(id=>!graph.Modules.ContainsKey(id));selected=selected!=null&&graph.Modules.TryGetValue(selected.Id,out var m)?m:null;status.Text="觀察時間 "+graph.ObservedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");RenderTree();RenderInspector();}
    catch(Exception e){if(!disposed)status.Text="載入失敗："+e.Message;throw;}finally{busy=false;}
   }
   void SearchKey(object sender,KeyEventArgs e){if(e.Key==Key.Enter){e.Handled=true;RenderTree();}}
@@ -68,7 +70,8 @@ namespace Alyvo.SsmsAiSqlAssistant
   {
    bool cycle=id.HasValue&&path.Contains(id.Value);var data=new MapTreeNode{Id=id,Edge=edge,Path=path,Cycle=cycle};var label=id.HasValue?graph.Modules[id.Value].FullName:"未解析 · "+edge.Label;label+=id.HasValue?(graph.Modules[id.Value].IsProcedure?"  SP":"  View"):"";
    if(cycle)label+=" · 循環";else if(id.HasValue&&graph.Up(id.Value)>1)label+=" · 共用";if(!string.IsNullOrEmpty(edge?.Condition))label+=" · 條件："+edge.Condition;
-   var item=new TreeViewItem{Header=Ui.Text(label,13),Tag=data,Padding=new Thickness(4,7,4,7),HorizontalContentAlignment=HorizontalAlignment.Stretch};item.ToolTip=edge==null?label:edge.Reason+"\nline "+edge.Line+" "+edge.Evidence;
+   var nodeHeader=new WrapPanel();nodeHeader.Children.Add(Ui.Text(label,13));if(id.HasValue){var calls=graph.DownstreamCallLines(id.Value);if(calls.Length>0){var lineLabel=Ui.Text(calls,12,"#475569");lineLabel.Margin=new Thickness(12,3,0,3);lineLabel.ToolTip="呼叫行號以此 SP 掃描時的完整定義為準，不含 Query Editor 額外加入的 USE / GO。";nodeHeader.Children.Add(lineLabel);}}
+   var item=new TreeViewItem{Header=nodeHeader,Tag=data,Padding=new Thickness(4,7,4,7),HorizontalContentAlignment=HorizontalAlignment.Stretch};item.ToolTip=edge==null?label:edge.Reason+"\nline "+edge.Line+" "+edge.Evidence;
    if(id.HasValue&&!cycle&&graph.Down(id.Value).Any())item.Items.Add(new TreeViewItem{Header="展開讀取本機關係",Tag="deferred"});return item;
   }
   void Populate(TreeViewItem item){var data=item.Tag as MapTreeNode;if(data?.Id==null||data.Cycle||item.Items.Count!=1||!Equals((item.Items[0] as TreeViewItem)?.Tag,"deferred"))return;item.Items.Clear();foreach(var edge in graph.Down(data.Id.Value))item.Items.Add(Item(edge.Callee,edge,data.Path.Concat(new[]{data.Id.Value}).ToArray()));}
@@ -85,7 +88,25 @@ namespace Alyvo.SsmsAiSqlAssistant
    var actions=new WrapPanel();if(graph.Down(module.Id).Any())actions.Children.Add(Button("查看下游",Scope));if(module.IsProcedure&&module.Definition!=null){actions.Children.Add(Button("開 Query Editor",()=>MapIntegration.OpenQuery(context,module)));actions.Children.Add(Button("建立版本",()=>{var reason=AskReason();if(reason==null)return;versions.Create(context,module,module.Definition,reason);NotifyVersionChanged();}));actions.Children.Add(Button("匯出",()=>MessageBox.Show(versions.Export(context,module),"已匯出 SQL + history.json")));}inspector.Children.Add(actions);
    var tabs=new TabControl{Margin=new Thickness(0,12,0,0)};var basic=new StackPanel{Margin=new Thickness(8)};basic.Children.Add(Ui.Text("用途\n"+module.Purpose+"\n\n負責單位\n"+module.Owner+"\n\n資料庫註解來源\nsys.sql_modules definition\nDeclared revision: "+module.Revision));foreach(var edge in graph.Down(module.Id))basic.Children.Add(Ui.Text("\n→ "+(edge.Callee.HasValue?graph.Modules[edge.Callee.Value].FullName:"未解析 · "+edge.Label)+"\n"+edge.Condition+"\n"+edge.Reason+"\nline "+edge.Line+" · "+edge.Evidence,12));tabs.Items.Add(new TabItem{Header="基本資料",Content=basic});
    var sqlPanel=new StackPanel();sqlPanel.Children.Add(Ui.Code(module.Definition??"SQL Server 沒有回傳這支 SP 的完整定義。",380));if(module.Definition!=null)sqlPanel.Children.Add(Button("複製完整 SQL",()=>Clipboard.SetText(module.Definition)));tabs.Items.Add(new TabItem{Header="完整 SQL",Content=sqlPanel});
-   var history=new StackPanel{Margin=new Thickness(8)};history.Children.Add(Ui.Text("目前觀察版 · "+graph.ObservedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")+"\n掃描不會建立正式 Vn。",12));if(module.IsProcedure){foreach(var version in versions.Load(context,module).Versions.OrderByDescending(v=>v.Number)){var v=version;var record=new StackPanel();record.Children.Add(Ui.Text("V"+v.Number+" · "+v.Kind+" · "+v.State,15));record.Children.Add(Ui.Text(v.Author+"\n"+v.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")+"\n原因："+v.Reason+"\nSHA-256："+v.Hash,11));record.Children.Add(Ui.Code(v.Diff,160));var buttons=new WrapPanel();buttons.Children.Add(Button("查看此版完整 SQL",()=>ShowSql("V"+v.Number,v.Sql)));if(v.State=="未套用"){buttons.Children.Add(Button("候選審查",()=>ShowSql("候選審查：up / down migration",v.UpSql+"\n\n-- DOWN\n"+v.DownSql)));buttons.Children.Add(AsyncButton("套用到資料庫",()=>Apply(module,v,false)));}buttons.Children.Add(Button("複製還原 SQL",()=>Clipboard.SetText(v.DownSql)));if(v.State=="已套用")buttons.Children.Add(AsyncButton("還原到資料庫",()=>Apply(module,v,true)));record.Children.Add(buttons);history.Children.Add(Card(record));}}else history.Children.Add(Ui.Text("View 不提供 SP 套用操作。"));tabs.Items.Add(new TabItem{Header="版本紀錄",Content=history});inspector.Children.Add(tabs);
+   var history=new StackPanel{Margin=new Thickness(8)};history.Children.Add(Ui.Text("選取版本以查看內容；還原會新增版本，保留既有歷史。",12));
+   if(module.IsProcedure)
+   {
+    var records=versions.Load(context,module).Versions.OrderByDescending(v=>v.Number).ToArray();
+    if(records.Length==0)history.Children.Add(Ui.Text(baselineErrors.TryGetValue(module.Id,out var baselineError)?baselineError:"尚未建立版本。",12,"#92400E"));
+    else
+    {
+     var picker=new ComboBox{ItemsSource=records.Select(v=>"V"+v.Number+" · "+v.Kind+" · "+v.State).ToArray(),Margin=new Thickness(0,8,0,10),MinHeight=30};var detail=new StackPanel();
+     void ShowVersion(){detail.Children.Clear();if(picker.SelectedIndex<0)return;var v=records[picker.SelectedIndex];detail.Children.Add(Ui.Text("V"+v.Number+" · "+v.Kind+" · "+v.State,15));detail.Children.Add(Ui.Text(v.Author+"\n"+v.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")+"\n原因："+v.Reason+(v.RestoredFromVersion.HasValue?"\n還原來源：V"+v.RestoredFromVersion:""),11));detail.Children.Add(Ui.Code(v.Sql,300));detail.Children.Add(Ui.Expand("此版差異",Ui.Code(v.Diff,200),true));var buttons=new WrapPanel();buttons.Children.Add(Button("查看此版完整 SQL",()=>ShowSql("V"+v.Number,v.Sql)));if(v.State=="未套用")buttons.Children.Add(AsyncButton("套用到資料庫",()=>Apply(module,v,false)));buttons.Children.Add(AsyncButton("還原此版並建立新版本",()=>RestoreVersion(module,v)));detail.Children.Add(buttons);}
+     picker.SelectionChanged+=(s,e)=>ShowVersion();history.Children.Add(picker);history.Children.Add(detail);picker.SelectedIndex=0;
+    }
+   }
+   else history.Children.Add(Ui.Text("View 不提供 SP 套用操作。"));tabs.Items.Add(new TabItem{Header="版本紀錄",Content=history});inspector.Children.Add(tabs);
+  }
+  async Task RestoreVersion(MapModule module,SpVersion target)
+  {
+   if(busy)return;var reason=AskReason("還原至 V"+target.Number);if(reason==null)return;SpVersion created;busy=true;
+   try{var current=await MapIntegration.ReadCurrentDefinition(context,module);created=versions.CreateRestore(context,module,target.Number,current,reason);}finally{busy=false;}
+   NotifyVersionChanged();await Apply(module,created,false);
   }
   async Task Apply(MapModule module,SpVersion version,bool restore){if(busy)return;var operation=restore?"還原":"套用";var migrations=versions.Prepare(context,module,version.Number);if(MessageBox.Show(operation+" V"+version.Number+" 到 "+context.Server+" / "+context.Database+" / "+module.FullName+"？\n將以 transaction 執行 CREATE OR ALTER，並回讀 hash。\nup/down migration："+migrations,operation+"到資料庫",MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;busy=true;try{await versions.Apply(context,module,version.Number,restore,CancellationToken.None);}finally{busy=false;}await Reload();}
   static void ShowSql(string title,string sql){var window=new Window{Title=title,Width=760,Height=560,Content=Ui.Code(sql,500),WindowStartupLocation=WindowStartupLocation.CenterScreen};window.ShowDialog();}
@@ -95,3 +116,7 @@ namespace Alyvo.SsmsAiSqlAssistant
   public void Dispose(){disposed=true;bringTimer.Stop();bringTimer.Tick-=BringInspector;cancellation?.Cancel();cancellation?.Dispose();VersionChanged-=RefreshVersion;SizeChanged-=Resized;search.KeyDown-=SearchKey;tree.SelectedItemChanged-=Selected;tree.PreviewMouseDoubleClick-=DoubleClicked;tree.RemoveHandler(TreeViewItem.ExpandedEvent,new RoutedEventHandler(Expanded));}
  }
 }
+
+
+
+

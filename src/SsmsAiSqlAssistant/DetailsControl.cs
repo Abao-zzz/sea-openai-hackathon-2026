@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +13,15 @@ namespace Alyvo.SsmsAiSqlAssistant
  public static class Ui
  {
   public static SolidColorBrush Brush(string color)=>new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+  static readonly System.Runtime.CompilerServices.ConditionalWeakTable<SuggestionDto,System.Collections.Generic.Dictionary<string,StackPanel>> suggestionViews=new System.Runtime.CompilerServices.ConditionalWeakTable<SuggestionDto,System.Collections.Generic.Dictionary<string,StackPanel>>();
+  public static UIElement Suggestion(SuggestionDto suggestion,ConnectionContext context=null,string sql=null)
+  {
+   var views=suggestionViews.GetOrCreateValue(suggestion);var key=(context?.Fingerprint??"")+"|"+sql+"|"+suggestion.Sql;
+   if(views.TryGetValue(key,out var existing)){if(existing.Parent is Panel parent)parent.Children.Remove(existing);return existing;}
+   var panel=new StackPanel();views[key]=panel;panel.Children.Add(Text(suggestion.Title,15));
+   if(context!=null&&sql!=null){try{IndexTrial.Parse(sql,suggestion.Sql);var trial=new IndexTrialControl(context,sql,suggestion.Sql);trial.CurrentVersionBest+=()=>{foreach(UIElement child in panel.Children)child.Visibility=ReferenceEquals(child,trial)?Visibility.Visible:Visibility.Collapsed;};panel.Children.Add(trial);}catch(InvalidOperationException error){panel.Children.Add(Text("未自動執行："+error.Message,12,"#92400E"));}}
+   else panel.Children.Add(Text("缺少可測量的查詢；建議尚未執行。",12,"#92400E"));panel.Children.Add(Code(suggestion.Sql,240));panel.Children.Add(Button("複製建議 SQL",()=>Clipboard.SetText(suggestion.Sql)));panel.Children.Add(Text(suggestion.Explanation));return panel;
+  }
   public static TextBlock Text(string text,int size=12,string color="#111827")=>new TextBlock{Text=text??"",FontSize=size,Foreground=Brush(color),TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,3,0,3)};
   public static Button Button(string text,Action action,bool primary=false){var b=new Button{Content=text,Padding=new Thickness(10,5,10,5),MinHeight=30,Margin=new Thickness(6,0,0,4),Background=primary?Brush("#1D4ED8"):Brushes.White,Foreground=primary?Brushes.White:Brush("#111827"),BorderBrush=Brush("#DDE1E6"),BorderThickness=new Thickness(1)};b.Click+=(s,e)=>action();return b;}
   public static Button AsyncButton(string text,Func<Task> action,bool primary=false){var b=Button(text,()=>{},primary);async void Click(object sender,RoutedEventArgs e){try{await action();}catch(Exception error){Diagnostics.Error(error);}}b.Click+=Click;return b;}
@@ -49,8 +58,9 @@ namespace Alyvo.SsmsAiSqlAssistant
    if(!Dispatcher.CheckAccess()){Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.RunAsync(async()=>{await Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();Refresh();});return;}var offset=scroll.VerticalOffset;body.Children.Clear();var session=SessionHub.Current;var a=session?.Analysis;
    if(!string.IsNullOrEmpty(session?.Message))AddCard("訊息",Ui.Text(session.Message,12,"#92400E"));
    if(a==null){AddCard("開始優化",Ui.Text("請回 Query Editor 反白 SQL，開啟「AI 優化」浮動模式，再按卡片上的「一鍵優化」。反白本身不會送 AI。"));AddDiagnostics();return;}
+   if(!a.Busy&&a.NoFurtherSuggestions){AddCard("",Ui.Text("目前沒有進一步優化建議。",17,"#047857"));scroll.ScrollToTop();return;}
    var failure=!string.IsNullOrEmpty(a.Error)||a.Preflight?.Passed==false||a.DryRun?.Passed==false;var accent=failure?"#B91C1C":a.DryRun?.Passed==true?"#047857":"#1D4ED8";
-   var conclusion=new StackPanel();conclusion.Children.Add(Ui.Text(a.Status,17,accent));if(!string.IsNullOrEmpty(a.Error))conclusion.Children.Add(Ui.Text(a.Error,12,"#B91C1C"));conclusion.Children.Add(Ui.Text("只替換編輯器文字；候選不在來源資料庫執行。",12,"#4B5563"));
+   var conclusion=new StackPanel();conclusion.Children.Add(Ui.Text(a.Status,17,accent));if(!string.IsNullOrEmpty(a.Error))conclusion.Children.Add(Ui.Text(a.Error,12,"#B91C1C"));conclusion.Children.Add(Ui.Text("套用 SQL 只替換編輯器文字；索引建議另以來源資料庫 transaction 自動測試並 rollback。",12,"#4B5563"));
    if(a.Busy){conclusion.Children.Add(new ProgressBar{IsIndeterminate=true,Height=4,Margin=new Thickness(0,8,0,8)});conclusion.Children.Add(Ui.Button("取消",session.Cancel));}
    var apply=Ui.ActionButton(a.Applied?"已套用":"套用 SQL",session.Apply);apply.IsEnabled=a.CanApply;
    var applyReason=a.Applied?"已替換編輯器文字，可使用復原或 Ctrl+Z。":a.CanApply?"驗證通過，按「套用 SQL」替換原本反白的 SQL。":!string.IsNullOrEmpty(a.Error)?"請先排除錯誤並重新分析。":a.Busy?"驗證執行中，完成後才可套用。":a.Candidate==null?"等待 AI 產生候選 SQL。":a.Preflight?.Passed!=true?"六項安全預檢通過後，請執行 Snapshot Dry Run。":"Snapshot Dry Run 通過後才可套用。";
@@ -61,6 +71,7 @@ namespace Alyvo.SsmsAiSqlAssistant
    var grid=new UniformGrid{Columns=2};foreach(var pair in new[]{new[]{"分析來源",a.Response?.AiProvider??"尚未送出"},new[]{"候選",(a.Response?.Candidates.Length??0)+" 組"},new[]{"安全預檢",a.Preflight==null?"尚未完成":a.Preflight.Passed?"通過":"退回"},new[]{"Snapshot Dry Run",a.DryRun?.Status??"尚未執行"}}){var item=new StackPanel{Margin=new Thickness(5)};item.Children.Add(Ui.Text(pair[0],11,"#6B7280"));item.Children.Add(Ui.Text(pair[1],13));grid.Children.Add(item);}body.Children.Add(Ui.Card(grid));
    if(a.Response!=null)
    {
+    foreach(var suggestion in a.Response.Suggestions??new SuggestionDto[0])AddCard("索引與統計資訊建議",Ui.Suggestion(suggestion,a.Connection,a.Original));
     AddCard("摘要",Ui.Text(a.Response.Summary));if(a.Response.Issues.Any())AddCard("問題與修改理由",Ui.Text(string.Join("\n",a.Response.Issues)));if(a.Response.Warnings.Any())AddCard("提醒",Ui.Text(string.Join("\n",a.Response.Warnings),12,"#92400E"));
     if(a.Response.Candidates.Length>1){var choices=new ComboBox{ItemsSource=Enumerable.Range(0,a.Response.Candidates.Length).Select(i=>"候選版本 #"+(i+1)).ToArray(),SelectedIndex=a.CandidateIndex,Margin=new Thickness(0,0,0,10),IsEnabled=!a.Busy};choices.SelectionChanged+=(s,e)=>{if(choices.SelectedIndex>=0)session.SelectCandidate(choices.SelectedIndex);};body.Children.Add(choices);}
    }
@@ -107,3 +118,5 @@ namespace Alyvo.SsmsAiSqlAssistant
   }
  }
 }
+
+

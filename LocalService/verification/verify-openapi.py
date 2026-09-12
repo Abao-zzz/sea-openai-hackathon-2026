@@ -10,3 +10,4 @@ for path in ['/health','/api/v1/capabilities','/metadata-query','/evidence-scrip
 count=sum(len([m for m in v if m in ['get','post','delete']]) for v in spec['paths'].values())
 pathlib.Path('reports/openapi-verification.json').write_text(json.dumps({'openapi31Valid':True,'operationCount':count,'schemaCount':len(spec['components']['schemas']),'liveResponseChecks':checks},indent=2),encoding='utf-8')
 print(json.dumps({'operations':count,'schemas':len(spec['components']['schemas']),'liveResponsesValidated':len(checks)}))
+

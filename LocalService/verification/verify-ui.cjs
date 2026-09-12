@@ -20,3 +20,4 @@ const {chromium}=require('playwright');
  await browser.close();fs.writeFileSync(root+'/layout-verification.json',JSON.stringify({checks,goldenComparison:'NOT VERIFIED: supplied catalog has no localhost golden screenshots',scaling:'Chromium deviceScaleFactor emulation, not Windows display scaling'},null,2));
  console.log(JSON.stringify({apiPassed:api.filter(x=>x.pass).length,apiTotal:api.length,layoutPassed:checks.filter(x=>x.pass).length,layoutTotal:checks.length}));
 })().catch(e=>{console.error(e);process.exit(1)});
+

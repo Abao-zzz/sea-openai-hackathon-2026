@@ -1,4 +1,4 @@
-USE master;
+﻿USE master;
 GO
 IF DB_ID(N'AlyvoStage5SpScanAcceptance') IS NOT NULL THROW 51000,'Dedicated fixture already exists; no changes made.',1;
 CREATE DATABASE AlyvoStage5SpScanAcceptance;

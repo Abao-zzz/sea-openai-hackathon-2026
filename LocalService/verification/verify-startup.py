@@ -22,3 +22,4 @@ finally:
 records.append(dict(case='console-privacy',passed='synthetic-test-key-only' not in out,log=out))
 reports.joinpath('startup-verification.json').write_text(json.dumps(records,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps({'passed':sum(x['passed'] for x in records),'total':len(records)}))
+

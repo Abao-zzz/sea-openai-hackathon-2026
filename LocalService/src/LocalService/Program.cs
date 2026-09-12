@@ -108,3 +108,7 @@ app.Lifetime.ApplicationStarted.Register(()=>Console.WriteLine("LocalService 已
 app.Run();
 public partial class Program { }
 namespace LocalService { public sealed record EmptyRequest; }
+
+
+
+

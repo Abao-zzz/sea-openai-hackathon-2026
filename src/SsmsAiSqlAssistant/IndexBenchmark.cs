@@ -1,0 +1,1 @@
+namespace Alyvo.SsmsAiSqlAssistant { public static class IndexBenchmark { public static string Improvement(long before,long after)=>before==0?"基準為 0，無法計算":((before-after)*100.0/before).ToString("N1")+"%"; } }
