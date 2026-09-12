@@ -616,3 +616,34 @@
   --step-wash-4: color-mix(in srgb, #0358F7 12%, var(--card));
 }
 .pitch .solution-steps .step-title.step-marked { background-color: var(--step-wash); }
+
+/* Video-first demo slide with the same frame before and after adding a recording. */
+.pitch .demo-stage { justify-content: center; padding-bottom: 0; }
+.pitch .demo-stage .demo-window { position: relative; width: 46rem; flex: none; aspect-ratio: 16 / 9; box-sizing: content-box; margin: 0 auto; }
+.pitch .demo-stage .demo-window video { width: 100%; height: 100%; object-fit: contain; }
+.pitch .demo-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--linen); color: var(--muted); font-family: var(--font-serif); font-size: 1.5rem; font-weight: 300; }
+
+.pitch .demo-play { position: absolute; inset: 0; margin: auto; width: 4.5rem; height: 4.5rem; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--ink); color: var(--card); cursor: pointer; transition: transform .2s ease; }
+.pitch .demo-play svg { width: 2rem; height: 2rem; margin-left: .2rem; }
+.pitch .demo-play:enabled:hover { transform: scale(1.08); }
+.pitch .demo-play:disabled { cursor: default; }
+.pitch .demo-play:focus-visible { outline: 3px solid var(--lime); outline-offset: 4px; }
+
+/* Manual diagnosis: a three-step loop before introducing the agent. */
+.pitch .manual-workflow { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.pitch .manual-steps { display: grid; grid-template-columns: 1fr 2rem 1fr 2rem 1fr; align-items: center; gap: .5rem; }
+.pitch .manual-visual { height: 10rem; display: flex; align-items: center; justify-content: center; }
+.pitch .manual-visual svg { width: 100%; max-width: 13rem; fill: var(--card); stroke: var(--ink); stroke-width: 2; }
+.pitch .manual-visual .manual-bars { stroke: var(--muted); stroke-width: 10; stroke-linecap: round; }
+.pitch .manual-visual .manual-lens { fill: color-mix(in srgb, var(--saffron, #ffdc5c) 40%, transparent); stroke-width: 3; }
+.pitch .manual-visual .manual-handle { stroke-width: 6; stroke-linecap: round; }
+.pitch .manual-label { font-family: var(--font-serif); font-size: 1.5rem; text-align: center; font-weight: 600; }
+.pitch .manual-label > span { font-family: var(--font-mono); font-size: .8rem; font-weight: 400; color: var(--muted); margin-right: .6rem; }
+.pitch .manual-arrow { color: var(--muted); font-size: 1.8rem; padding-bottom: 2rem; }
+.pitch .manual-code { flex-direction: column; align-items: flex-start; padding-left: 1rem; font-family: var(--font-mono); font-size: .95rem; gap: .6rem; }
+.pitch .manual-old { color: var(--muted); text-decoration: line-through; }
+.pitch .manual-new { background: var(--lime); padding: .1rem .4rem; border-radius: .25rem; }
+.pitch .manual-loop { position: relative; height: 6rem; margin-top: 1.2rem; }
+.pitch .manual-loop svg { width: 100%; height: 4rem; fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.pitch .manual-loop > span { position: absolute; top: 1.6rem; left: 50%; transform: translateX(-50%); background: var(--bg); padding: 0 1rem; font-family: var(--font-serif); font-size: 1.5rem; white-space: nowrap; }
+.pitch .manual-loop mark { background: var(--lime); color: var(--ink); padding: .05em .35em; border-radius: .3rem; }

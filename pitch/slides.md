@@ -82,7 +82,19 @@ eyebrow: 01 · PROBLEM · 問題
 -->
 
 ---
-eyebrow: 02 · WHY NOT SOLVED · 為什麼 AI 還沒解決
+eyebrow: 02 · BEFORE AGENTS · 開發者怎麼做
+---
+
+# 改一支 SP，先追半天。
+
+<ManualWorkflow />
+
+<!--
+在 AI agent 之前，開發者通常先跑 SP、看執行計畫，再搭配實際耗時與 logical reads 找出瓶頸，判斷 SQL 可以怎麼改。改完還要重跑，確認結果一致、效能是否改善；沒有改善就再找原因。圖是流程示意，不代表特定 SP 的量測結果。「追半天」描述排查往返的感受，不是固定工時。接下來帶到：AI 可以加快改寫，但仍需要證明改得對、真的有改善。
+-->
+
+---
+eyebrow: 03 · WHY NOT SOLVED · 為什麼 AI 還沒解決
 ---
 
 # AI 早就會改。錯的方式有兩種。
@@ -121,7 +133,7 @@ eyebrow: 02 · WHY NOT SOLVED · 為什麼 AI 還沒解決
 -->
 
 ---
-eyebrow: 03 · SOLUTION · 我們的解法
+eyebrow: 04 · SOLUTION · 我們的解法
 clicks: 3
 ---
 
@@ -135,19 +147,17 @@ clicks: 3
 -->
 
 ---
-eyebrow: 04 · DEMO
+eyebrow: 05 · DEMO
 ---
-
-# 演示：退回、放行，再進版與退版
 
 <DemoStage class="rv" style="--d:300" />
 
 <!--
-先看掃描結果，再看 SP 呼叫追蹤。接著看沒有索引的改寫被退回，再看結果一致、logical reads 下降的案例。通過候選先成為未套用版本，人確認後才套用，最後展示還原。這一版未包含錄影，頁面呈現的是流程示意，不是產品執行結果。
+先看掃描結果，再看 SP 呼叫追蹤。接著看沒有索引的改寫被退回，再看結果一致、logical reads 下降的案例。通過候選先成為未套用版本，人確認後才套用，最後展示還原。此頁以影片呈現，錄影尚未加入，目前保留影片框。
 -->
 
 ---
-eyebrow: 05 · HOW IT VERIFIES · 它為什麼說不
+eyebrow: 06 · HOW IT VERIFIES · 它為什麼說不
 ---
 
 # 它退回了一支「看起來更好」的改寫。
@@ -180,7 +190,7 @@ eyebrow: 05 · HOW IT VERIFIES · 它為什麼說不
 -->
 
 ---
-eyebrow: 06 · WHY IT CAN BE TRUSTED · 通過的怎麼通過
+eyebrow: 07 · WHY IT CAN BE TRUSTED · 通過的怎麼通過
 ---
 
 # 通過的那一支，是怎麼通過的。
@@ -210,7 +220,7 @@ eyebrow: 06 · WHY IT CAN BE TRUSTED · 通過的怎麼通過
 -->
 
 ---
-eyebrow: 07 · CODEX
+eyebrow: 08 · CODEX
 ---
 
 # Codex 與 OpenAI 的分工

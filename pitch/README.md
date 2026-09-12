@@ -27,7 +27,7 @@ PDF 產生在 `pitch-deck.pdf`。HTML 建置在 `dist/`，需以 HTTP server 提
 
 ## Demo
 
-目前未提供影片，第 5 頁顯示可切換六步的演示流程。放入 `public/video/demo.mp4` 並重啟開發伺服器，即顯示影片。章節時間位於 `components/DemoStage.vue`。
+第 5 頁保留 16:9 嵌入影片框，目前未提供影片。放入 `public/video/demo.mp4` 並重啟開發伺服器，即顯示影片。影片元件位於 `components/DemoStage.vue`，提供原生播放控制。
 
 ## 下一輪需補的證據
 

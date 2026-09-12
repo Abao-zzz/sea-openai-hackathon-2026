@@ -32,7 +32,7 @@ const step = computed(() => Number.parseInt(props.eyebrow ?? '', 10) || 0)
 </script>
 
 <template>
-  <div class="slidev-layout pitch" :class="[mode, { centered: props.centered }]" :style="{ '--step': step, '--steps': 8 }">
+  <div class="slidev-layout pitch" :class="[mode, { centered: props.centered }]" :style="{ '--step': step, '--steps': 9 }">
     <Eyebrow v-if="props.eyebrow" :step="step">{{ props.eyebrow }}</Eyebrow>
     <slot />
     <div v-if="props.frontmatter?.pagenum !== false" class="pagenum">{{ $page }}</div>
