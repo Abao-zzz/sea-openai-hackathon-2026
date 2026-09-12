@@ -909,3 +909,10 @@
 .pitch.anim .solution-steps .step-title::before { animation:solution-marker-draw .65s cubic-bezier(.22,.61,.36,1) .25s both; }
 @keyframes solution-marker-draw { from { transform:scaleX(0); } to { transform:scaleX(1); } }
 @media (prefers-reduced-motion: reduce) { .pitch.anim .solution-steps .step-title::before { animation:none; } }
+
+/* Give the recording nearly the full slide, preserving its complete frame. */
+.slidev-layout.pitch:has(.demo-stage) { padding: .8rem 1.1rem; }
+.pitch:has(.demo-stage) > .eyebrow { margin:0; font-size:.65rem; }
+.pitch:has(.demo-stage) > .pagenum { display:none; }
+.pitch .demo-stage { position:absolute; inset:2.2rem .8rem .6rem; align-items:center; justify-content:center; }
+.pitch .demo-stage .demo-window { width:auto; height:100%; max-width:100%; aspect-ratio:16 / 9; box-sizing:border-box; border:2px solid #fff; border-radius:.4rem; overflow:hidden; filter:none; box-shadow:0 3px 12px rgba(0,0,0,.08); }
