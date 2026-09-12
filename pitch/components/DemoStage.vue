@@ -5,8 +5,8 @@ const live = useLive()
 const video = ref<HTMLVideoElement | null>(null)
 const selected = ref(0)
 const chapters = [
-  { label: '呼叫地圖', t: 0, title: '先看這支 SP 會牽動誰', detail: '追蹤上游與下游呼叫。無法解析的 dynamic SQL 會標明未解析。' },
-  { label: '掃描', t: 15, title: '先排除不適合改寫的 SP', detail: '讀取 catalog、DMV 與 Query Store，保留每一筆跳過理由。' },
+  { label: '掃描', t: 0, title: '盤點現有 SP，找出高成本項目', detail: '讀取 catalog、DMV 與 Query Store，保留每一筆跳過理由。' },
+  { label: 'SP 呼叫追蹤', t: 15, title: '先看這支 SP 會牽動誰', detail: '追蹤上游與下游呼叫。無法解析的 dynamic SQL 會標明未解析。' },
   { label: '退回一支', t: 30, title: '改寫看似合理，驗證仍可能退回', detail: 'CreatedAt 沒索引的測試案例，logical reads 為 49 與 49。', tone: 'red' },
   { label: '放行一支', t: 50, title: '結果一致，而且實測讀取量下降', detail: '檢查欄位、列數與結果 hash，再比較 median logical reads。', tone: 'green' },
   { label: '進版', t: 75, title: '先建立版本，再由人確認套用', detail: '保留 diff 與 up/down migration，套用前檢查定義是否已被修改。' },

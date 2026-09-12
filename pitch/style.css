@@ -582,3 +582,37 @@
 .pitch .chapter:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 /* Keep demo chapter buttons above Slidev's hover navigation toolbar. */
 .pitch .demo-stage { padding-bottom: 1.5rem; }
+
+/* Preserve the official event name capitalization on the cover. */
+.pitch .title-event { text-transform: none; }
+
+/* All six problem cards share the same typography, spacing and color. */
+.pitch .problem-stats .stat { padding: 1.2rem 1.5rem; }
+.pitch .problem-stats .stat-value { font-size: 3.5rem; color: var(--ink); margin-bottom: 0.7rem; }
+.pitch .problem-stats .stat-label { font-size: 0.9375rem; }
+
+/* The SQL examples end with one memorable failure and a short evidence line. */
+.pitch .wrongs .failure-result { margin-top: auto; padding-top: 1.2rem; }
+.pitch .failure-headline { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 300; line-height: 1.25; color: var(--ink); }
+.pitch .failure-evidence { display: flex; align-items: baseline; gap: 0.6rem; margin-top: 0.6rem; font-size: 1rem; line-height: 1.5; color: var(--muted); }
+.pitch .failure-metric { font-family: var(--font-mono); color: var(--ink); font-weight: 700; }
+.pitch .failure-unit { font-size: 0.8rem; }
+
+/* Dia: quieter diff washes keep the result headlines in focus. */
+.pitch .wrongs .diff-line.del { background: color-mix(in srgb, var(--red-tint) 35%, var(--card)); }
+.pitch .wrongs .diff-line.add { background: color-mix(in srgb, var(--green-tint) 35%, var(--card)); }
+
+/* Click progression: the current title receives the Dia lime highlight. */
+.pitch .solution-steps .card { transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+.pitch .solution-steps .card-body { font-size: 1rem; }
+
+.pitch .solution-steps .step-title { padding: 0.05em 0.35em; border-radius: 0.3rem; transition: background-color 0.2s ease; }
+
+/* Cumulative marker colors: Dia washes and pale tints of its spectrum. */
+.pitch .solution-steps {
+  --step-wash-1: var(--lime);
+  --step-wash-2: color-mix(in srgb, var(--saffron) 50%, var(--card));
+  --step-wash-3: #E1E1FE;
+  --step-wash-4: color-mix(in srgb, #0358F7 12%, var(--card));
+}
+.pitch .solution-steps .step-title.step-marked { background-color: var(--step-wash); }

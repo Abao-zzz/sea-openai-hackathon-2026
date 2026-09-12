@@ -36,7 +36,7 @@ centered: true
 驗證通過，才交給人套用。</div>
 <div class="rule rv grow" style="--d:900"></div>
 <div class="title-team rv" style="--d:1100">肥宅快樂水</div>
-<div class="title-event rv" style="--d:1200">Sea × OpenAI Codex Hackathon Taiwan</div>
+<div class="title-event rv" style="--d:1200">2026 Sea x OpenAI Regional Codex Hackathon TW</div>
 </div>
 <div class="title-aside">
 <div class="fan">
@@ -58,20 +58,27 @@ eyebrow: 01 · PROBLEM · 問題
 # 企業資料庫裡，沒人敢碰的 SQL
 
 <div class="s3-body">
-<div class="grid-3 stats-hero">
-<StatCard class="rv" style="--d:200"><template #value><CountUp :to="500" suffix="+" :delay="500" /></template>一間公司裡的 stored procedure</StatCard>
-<StatCard class="rv" style="--d:380"><template #value><span class="sway">？</span>支</template>半年沒人呼叫？沒人查過，更沒人敢刪</StatCard>
-<StatCard class="rv" style="--d:560"><template #value>2–3 hr</template>最複雜的那一支跑一次的時間。SP 套 SP，沒人拆得動</StatCard>
-</div>
-<div class="chips strong">
-<Chip tone="red" class="rv flash" style="--d:1900">沒有測試</Chip>
-<Chip tone="red" class="rv flash" style="--d:2150">沒有版本控制</Chip>
-<Chip tone="red" class="rv flash" style="--d:2400">寫的人已經離職</Chip>
+<div class="grid-3 problem-stats">
+<StatCard class="rv" style="--d:200"><template #value><CountUp :to="500" suffix="+" :delay="500" /></template>Stored Procedure</StatCard>
+<StatCard class="rv" style="--d:380"><template #value>？支</template>半年未使用</StatCard>
+<StatCard class="rv" style="--d:560"><template #value>2–3 hr</template>SP 層層相依</StatCard>
+
+<StatCard class="rv" style="--d:1900"><template #value>0</template>測試</StatCard>
+<StatCard class="rv" style="--d:2150"><template #value>沒有</template>版本控制</StatCard>
+<StatCard class="rv" style="--d:2400"><template #value>已離職</template>開發者</StatCard>
 </div>
 </div>
 
 <!--
-團隊在銀行、電商、零售與保險專案看過這類問題。500 多支 SP、最複雜的跑 2 到 3 小時，是過往經驗值，非市場統計。沒有歷史紀錄不代表沒人使用，因此不直接判定 dead code。SP 相互呼叫、缺測試與版本紀錄，讓每次修改都很難放心。
+我們過去在銀行、電商、零售與保險的專案裡，一間公司就可能有 500 多支 Stored Procedure。
+
+其中有多少支已經半年沒人用？沒人查過，也沒人敢刪。畫面上的問號代表數量未知，不代表已經確認它們沒人使用。
+
+最複雜的那一支，跑一次可能要 2 到 3 小時。裡面 SP 套 SP，層層相依，沒人拆得動，也沒人敢拆。
+
+再加上沒有測試、沒有版本控制，寫的人已經離職。大家不敢改，因為不知道改了會影響誰。
+
+備註：數字為團隊過往專案經驗。沒有歷史執行紀錄，不等於可以判定為 dead code。
 -->
 
 ---
@@ -88,9 +95,9 @@ eyebrow: 02 · WHY NOT SOLVED · 為什麼 AI 還沒解決
 <div class="diff-line del"><span class="g">-</span><span>WHERE ISNULL(c.Region, '') = ''</span></div>
 <div class="diff-line add"><span class="g">+</span><span><TypeIn text="WHERE c.Region = ''" :delay="900" /></span></div>
 </div>
-<div class="verdicts">
-<div class="callout-row good"><span class="mark">好處</span><span>SARGable，有機會走索引</span></div>
-<div class="callout-row bad hit"><span class="mark">壞處</span><span>NULL 的列<span class="red bold">消失了</span>，沒有錯誤訊息</span></div>
+<div class="failure-result">
+<div class="failure-headline">漏了資料</div>
+<div class="failure-evidence">NULL 列消失，卻不報錯</div>
 </div>
 </div>
 <div class="card rv" style="--d:1500">
@@ -100,15 +107,14 @@ eyebrow: 02 · WHY NOT SOLVED · 為什麼 AI 還沒解決
 <div class="diff-line del"><span class="g">-</span><span>WHERE CONVERT(date, CreatedAt) = @d</span></div>
 <div class="diff-line add"><span class="g">+</span><span><TypeIn text="WHERE CreatedAt >= @d&#10;  AND CreatedAt < DATEADD(day, 1, @d)" :delay="2100" /></span></div>
 </div>
-<div class="verdicts">
-<div class="callout-row good"><span class="mark">好處</span><span>半開區間，有機會走索引</span></div>
-<div class="callout-row bad hit"><span class="mark">壞處</span><span>沒索引：reads <span class="mono red bold">49 → 49</span>，沒快</span></div>
+<div class="failure-result">
+<div class="failure-headline">讀取量沒變</div>
+<div class="failure-evidence">無索引 <span class="failure-metric">49 → 49</span> <span class="failure-unit">logical reads</span></div>
 </div>
 </div>
 </div>
 
 <div class="close xl rv" style="--d:3600">缺的不是生成，是證明。</div>
-<div class="tiny soft">49 與 49 為 handoff 測試案例的 logical reads。</div>
 
 <!--
 第一個例子把 ISNULL 拿掉，可能更利於索引查找，但會遺漏 Region 為 NULL 的列。第二個改成日期半開區間，實際效益仍依索引與資料而定。49 與 49 是 handoff 的測試案例值。模型可以提案，資料庫驗證才能決定是否採用。
@@ -116,33 +122,16 @@ eyebrow: 02 · WHY NOT SOLVED · 為什麼 AI 還沒解決
 
 ---
 eyebrow: 03 · SOLUTION · 我們的解法
+clicks: 3
 ---
 
 # 先證明，再動手。
 
-<div class="grid-2 gates">
-<div class="card rv" style="--d:300">
-<div class="gate-head"><span class="gate-no">1</span><span class="card-title">呼叫地圖</span></div>
-<div class="card-body">改之前，先看會牽動誰。</div>
-</div>
-<div class="card rv" style="--d:500">
-<div class="gate-head"><span class="gate-no">2</span><span class="card-title">掃描</span></div>
-<div class="card-body">先決定哪些不碰，每一筆寫理由。</div>
-</div>
-<div class="card ink rv" style="--d:700">
-<div class="gate-head"><span class="gate-no">3</span><span class="card-title">優化</span></div>
-<div class="card-body">OpenAI 只提案。證不出，就退回。</div>
-</div>
-<div class="card rv" style="--d:900">
-<div class="gate-head"><span class="gate-no">4</span><span class="card-title">版本控制</span></div>
-<div class="card-body">進得去，也退得回。</div>
-</div>
-</div>
+<SolutionSteps />
 
-<div class="close sm rv" style="--d:1500">門由人開。門後每一個判斷都是它的，<span class="hl">包括說「不」</span>。</div>
 
 <!--
-先用呼叫地圖看牽連，再掃描高成本 SP。掃描只讀 catalog、DMV 與 Query Store，跳過項目都保留理由。優化先過六關安全預檢，再於唯讀 Database Snapshot 執行候選。通過後先建立版本，再由人確認套用。驗證階段不修改正式 SP，明確套用時才寫回定義。
+連接 DB 後，先盤點目前有哪些 SP，並查看哪些成本最高，再透過 SP 呼叫追蹤看清上下游，選擇優化對象。這裡像 Function Trace，呈現的是呼叫相依關係，不代表已支援執行期追蹤。掃描只讀 catalog、DMV 與 Query Store，跳過項目都保留理由。優化先過六關安全預檢，再於唯讀 Database Snapshot 執行候選。通過後先建立版本，再由人確認套用。驗證階段不修改正式 SP，明確套用時才寫回定義。
 -->
 
 ---
@@ -154,7 +143,7 @@ eyebrow: 04 · DEMO
 <DemoStage class="rv" style="--d:300" />
 
 <!--
-先看呼叫地圖與掃描結果。接著看沒有索引的改寫被退回，再看結果一致、logical reads 下降的案例。通過候選先成為未套用版本，人確認後才套用，最後展示還原。這一版未包含錄影，頁面呈現的是流程示意，不是產品執行結果。
+先看掃描結果，再看 SP 呼叫追蹤。接著看沒有索引的改寫被退回，再看結果一致、logical reads 下降的案例。通過候選先成為未套用版本，人確認後才套用，最後展示還原。這一版未包含錄影，頁面呈現的是流程示意，不是產品執行結果。
 -->
 
 ---
@@ -234,7 +223,7 @@ eyebrow: 07 · CODEX
 <div class="card-kicker">Runtime · OpenAI 只出現在一格</div>
 <div class="chips">
 <Chip class="rv" style="--d:1500">掃描</Chip><FlowArrow class="rv" style="--d:1600" />
-<Chip class="rv" style="--d:1700">地圖</Chip><FlowArrow class="rv" style="--d:1800" />
+<Chip class="rv" style="--d:1700">呼叫追蹤</Chip><FlowArrow class="rv" style="--d:1800" />
 <Chip tone="ink" class="rv" style="--d:1900">產生候選 · OpenAI</Chip><FlowArrow class="rv" style="--d:2000" />
 <Chip class="rv" style="--d:2100">六關預檢</Chip><FlowArrow class="rv" style="--d:2200" />
 <Chip class="rv" style="--d:2300">Snapshot Dry Run</Chip><FlowArrow class="rv" style="--d:2400" />
@@ -278,7 +267,7 @@ eyebrow: "08 · TODAY & NEXT · 收尾"
 
 <div class="kicker mt-4 rv" style="--d:2100">今天真的跑起來的</div>
 <div class="chips mt-2">
-<Chip class="rv" style="--d:2250">SP 呼叫地圖</Chip>
+<Chip class="rv" style="--d:2250">SP 呼叫追蹤</Chip>
 <Chip class="rv" style="--d:2400">SP 掃描</Chip>
 <Chip class="rv" style="--d:2550">SP 優化與批次驗證</Chip>
 <Chip class="rv" style="--d:2700">SP 版本控制 · 進版 / 退版 / 稽核</Chip>
