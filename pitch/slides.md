@@ -210,33 +210,30 @@ eyebrow: 08 · VALUE · 應用價值
 -->
 
 ---
-eyebrow: 09 · CODEX
+eyebrow: 09 · CODEX · 應用深度
 ---
 
-# Codex 與 OpenAI 的分工
+# 從想法到上台，Codex 全程參與。
 
-<div class="grid-2 rv" style="--d:200">
-<div class="card"><div class="card-kicker">開發時</div><div class="card-title">Codex 提案，測試與 review 把關</div><div class="card-body">程式碼需要通過檢查，才能成為產品的一部分。</div></div>
-<div class="card"><div class="card-kicker">產品運行時</div><div class="card-title">OpenAI 產生 SQL 候選</div><div class="card-body">平台執行預檢與 Snapshot 驗證，由人決定是否套用。</div></div>
+<div class="codex-with-history">
+<div class="codex-depth">
+<div class="codex-depth-row rv" style="--d:200"><div class="codex-depth-title"><mark>一起想</mark></div><div class="codex-depth-work">討論與設計</div><div class="codex-depth-detail">釐清需求，推敲解法</div></div>
+<div class="codex-depth-row rv" style="--d:450"><div class="codex-depth-title"><mark>一起做</mark></div><div class="codex-depth-work">Agent ＋ SSMS Extension</div><div class="codex-depth-detail">把設計落成產品</div></div>
+<div class="codex-depth-row rv" style="--d:700"><div class="codex-depth-title"><mark>一起呈現</mark></div><div class="codex-depth-work">Codex ＋ Slidev</div><div class="codex-depth-detail">文案、版面、互動，逐頁迭代</div></div>
+<div class="codex-depth-close rv" style="--d:1100">這份簡報，也由 Codex 協作完成。</div>
 </div>
-<div class="card mt-3 rv" style="--d:1300">
-<div class="card-kicker">Runtime · OpenAI 只出現在一格</div>
-<div class="chips">
-<Chip class="rv" style="--d:1500">掃描</Chip><FlowArrow class="rv" style="--d:1600" />
-<Chip class="rv" style="--d:1700">呼叫追蹤</Chip><FlowArrow class="rv" style="--d:1800" />
-<Chip tone="ink" class="rv" style="--d:1900">產生候選 · OpenAI</Chip><FlowArrow class="rv" style="--d:2000" />
-<Chip class="rv" style="--d:2100">六關預檢</Chip><FlowArrow class="rv" style="--d:2200" />
-<Chip class="rv" style="--d:2300">Snapshot Dry Run</Chip><FlowArrow class="rv" style="--d:2400" />
-<Chip class="rv" style="--d:2500">套用</Chip>
-</div>
-<div class="runtime-line mt-2 rv" style="--d:2800">下一步：Codex 透過 MCP 走同一道門。沒有 <span class="mono red bold strike" style="--d:3400">apply</span>。</div>
-</div>
+<aside class="codex-history rv" style="--d:850">
+<div class="history-label">本次 hackathon 合計使用</div>
+<div class="history-total"><small>≈</small><b>1.83</b><span>億</span></div>
+<div class="history-token-unit">tokens</div>
+<CodexActivity />
 
-<div class="close sm rv" style="--d:3700">我們對 Codex 的要求，和對這個 agent 一樣：它提案，測試與 review 判決。</div>
+</aside>
+</div>
 
 
 <!--
-Codex 用於產品開發，程式碼經測試與 review。產品運行時，OpenAI 只負責產生 SQL 候選，掃描、地圖、Dry Run 與套用不呼叫模型。產生候選會送出唯讀 SP body 與一組參數值，plan XML 留在本機。MCP 是下一步，目前不宣稱已完成。
+這頁回答評審對 Codex 應用深度的問題，說明本次 hackathon 的開發過程。團隊使用 Codex 討論問題、梳理需求與設計方案；Agent 與 SSMS extension 的開發也使用 Codex。Pitch deck 則以 Codex 搭配 Slidev 製作，透過逐頁討論、瀏覽器標註與預覽反覆調整文案、元件、互動與版面。重點是 Codex 參與從討論與設計、產品實作到成果表達的多個階段，團隊負責提供產業脈絡與做決策。本 task 本機 token_count 紀錄截至 2026-09-12 14:21（台北）累計 42,562,315 tokens：input 42,498,882（其中 cached input 41,693,184）、output 63,433。快取輸入包含在 input 中，不另行加總；多輪上下文重讀會累加，並非獨立內容量、計費金額或團隊總用量。未量測程式碼生成占比與節省時間。團隊提供目前開發用量 117,000,000 tokens，完成時開發用量以 1.2 倍估算為 140,400,000，再加此簡報 task 的固定時間點 42,562,315，共 182,962,315（約 1.83 億）。目前兩者合計 159,562,315（約 1.60 億）。此計算依開發用量不含本簡報 task 的前提；開發數字由使用者提供，未另行稽核，簡報含快取輸入。本頁談開發工具的使用，不混同產品運行時的模型分工。
 -->
 
 ---
