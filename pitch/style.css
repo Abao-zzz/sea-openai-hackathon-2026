@@ -901,3 +901,11 @@
 .slidev-layout.pitch h1.title-hero { line-height:1.24; }
 .pitch .title-highlight { background:transparent; position:relative; isolation:isolate; }
 .pitch .title-highlight::before { content:""; position:absolute; z-index:-1; left:0; right:0; height:.86em; bottom:.02em; background:var(--lime); border-radius:.12em; }
+
+/* All four marker strokes draw together on slide entry and remain visible. */
+.pitch .solution-steps .step-title.step-marked { background-color:transparent; position:relative; isolation:isolate; }
+.pitch .solution-steps .step-title.step-marked::before { content:""; position:absolute; inset:0; z-index:-1; background:var(--step-wash); border-radius:.3rem; transform-origin:left center; }
+.pitch.pending .solution-steps .step-title::before { transform:scaleX(0); }
+.pitch.anim .solution-steps .step-title::before { animation:solution-marker-draw .65s cubic-bezier(.22,.61,.36,1) .25s both; }
+@keyframes solution-marker-draw { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .pitch.anim .solution-steps .step-title::before { animation:none; } }

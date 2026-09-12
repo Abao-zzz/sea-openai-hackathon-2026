@@ -131,7 +131,6 @@ eyebrow: 03 · WHY NOT SOLVED · 為什麼 AI 還沒解決
 
 ---
 eyebrow: 04 · SOLUTION · 我們的解法
-clicks: 3
 ---
 
 # 讓 Agent 接手 SP 優化流程。
