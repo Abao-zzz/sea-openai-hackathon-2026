@@ -4,7 +4,7 @@
 
 ## 一、產品說明
 
-AI SQL Performance Engineer 是面向 SQL Server 開發者與資料庫維運人員的效能優化 Agent，協助分析、改寫與驗證既有預存程序（SP）。
+SQL Performance Agent 是面向 SQL Server 開發者與資料庫維運人員的效能優化 Agent，協助分析、改寫與驗證既有預存程序（SP）。
 
 產品以「先驗證，再套用」為核心，將依賴分析、AI 改寫、實測驗證與版本管理整合為可操作的流程，讓工程師在保留決策權的前提下，逐步改善既有 SQL。
 
